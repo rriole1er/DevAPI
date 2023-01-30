@@ -202,3 +202,94 @@ php bin/console make:controller AuteurController --no-template
 http://localhost:8000/auteur
 ```
 
+## Definir les routes API dans le controler `AuteurController`
+
+### La route `/api/auteurs`, methode=GET
+
+- Route `/api/auteurs`
+```php
+
+public function getAuteurs(AuteurRepository $auteurRepository ) : Response
+{
+    $auteurs = $auteurRepository->findAll();
+    return new JsonResponse($auteurs,200,[],true);
+    
+
+}
+
+```
+
+- On installe la sérialisation 
+```bash
+composer require serializer
+```
+livre
+```php 
+
+public function getAuteurs(AuteurRepository $auteurRepository, SerializerInterface $serializer ) : JsonResponse
+{
+    $auteurs = $auteurRepository->findAll();
+    $auteursJson= $serializer->serialize($auteurs,'json');
+    return new JsonResponse($auteurs,200,[],true);
+
+}
+```
+
+### La route `/api/auteurs/{id}`; methode=GET           // Version 1
+    ```php 
+    
+    public function getAuteurs(Request $request, SerializerInterface $serializer, AuteurRepository $auteurRepository ) : JsonResponse
+    {
+            $auteur = $auteurRepository->findOneBy(array('id' => $request->get('id')));
+            $auteurJson= $serializer->serialize($auteur,'json');
+            return new JsonResponse($auteurJson,200,[],true);
+    }
+    
+    ```
+
+
+### La route `/api/auteurs/{id}`; methode=GET           // Version 2
+    ```php 
+    
+    public function getAuteurs(SerializerInterface $serializer, AuteurRepository $auteurRepository ) : JsonResponse
+    {
+            $auteurJson= $serializer->serialize($auteur,'json');
+            return new JsonResponse($auteurJson,200,[],true);
+    }
+    
+    ```
+
+### La route `/api/auteurs`
+
+```php
+
+public function postAuteur(Request $request,SerializerInterface $serializer, AuteurRepository $auteurRepository ){
+
+    $data = $request->getContent();
+    $auteur = $serializer->deserializer($date,Auteur::class,'json');
+    $repository->add($auteur,true);
+    return new JsonResponse("",Response::HTTP_CREATED,[],true);
+}
+
+```
+
+### La route `/api/auteurs`, methods=DELETE
+
+```php 
+public function deleteAuteur(Auteur $auteur, AuteurRepository $repository) : Response{
+
+    $repository->remove($auteur,true);
+    return new JsonResponse("",Response::HTTP_OK,[],true);
+    }
+```
+
+## BILAN 
+
+- Comprendre et maitrise le routage SF
+- -techniquement c'est lannotation qui fait le routage
+  - Mettre en oeuvre le routage ppur l'entité `Auteur`
+    - GET
+    - POST
+    - DELETE
+
+
