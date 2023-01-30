@@ -293,3 +293,59 @@ public function deleteAuteur(Auteur $auteur, AuteurRepository $repository) : Res
     - DELETE
 
 
+---
+
+**Developper une API à base du routage de Symfony**
+
+---
+
+**Application à l'entité `Livre`**
+**Branch Gitlab - Etape03-2**
+
+---
+
+## Objectf
+-Comprendre et maîtriser le routage Sf
+-Mettre en oeuvre le routage pour l'entité `Livre`
+-GET (*), GET (1) (select)
+-POST (insert)
+-DELETE (delete)
+
+
+## Controleur `LivreController`
+
+```
+php bin/console make:controller LivreController --no-template
+```
+
+## Jeu de test pour les livres
+- Ajouter les livres
+
+- Route `/api/livres methode=GET`
+```php
+
+public function getLivres(LivreRepository $livreRepository ) : Response
+{
+    $livres = $livreRepository->findAll();
+    return new JsonResponse($livres,200,[],true);
+    
+
+}
+
+```
+- serializer groups
+
+```
+    /**
+     * @Route("/api/livres", name="app_livres_api",methods={"GET"})
+     */
+    public function getLivres(LivreRepository $livreRepository, SerializerInterface $serializer ) : Response
+    {
+        $livres = $livreRepository->findAll();
+        $livresJson= $serializer->serialize($livres,'json',['groups'=>['liste_livres']]);
+        return new JsonResponse($livresJson,200,[],true);
+
+    }
+
+```
+

@@ -4,6 +4,7 @@ namespace App\Entity;
 
 use App\Repository\LivreRepository;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Serializer\Annotation\Groups;
 
 /**
  * @ORM\Entity(repositoryClass=LivreRepository::class)
@@ -14,22 +15,26 @@ class Livre
      * @ORM\Id
      * @ORM\GeneratedValue
      * @ORM\Column(type="integer")
+     * @Groups("liste_livres")
      */
     private $id;
 
     /**
      * @ORM\Column(type="string", length=255)
+     * @Groups("liste_livres")
      */
     private $titre;
 
     /**
      * @ORM\Column(type="integer")
+     * @Groups("liste_livres")
      */
     private $annee;
 
     /**
      * @ORM\ManyToOne(targetEntity=Auteur::class, inversedBy="livre")
      * @ORM\JoinColumn(nullable=false)
+     * @Groups("liste_livres")
      */
     private $auteur;
 
