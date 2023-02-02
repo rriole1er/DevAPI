@@ -403,6 +403,12 @@ public function postLivre(Request $request, LivreRepository $livreRepository, Au
 
 ## BILAN 
 
+- Les controlleur sont similaires, ressemblance entres les POST reponse HTTP
 - Les references entre attributs sont complexes, il faut faire attention a ne pas se tromper, utiliser les groups pour eviter les references circulaires,
 - Serializer à la main pour bien faire persister dans la base de donnée 
 
+## Conclusion 
+
+- reutiliser le code souces des routes
+- On peut avoir une bibliothèque permettant de crér le routes de l'API
+- API plateform, automatiser la création du routage donc API, création d'entités et généralement le OpenAPis (openapis.org)
