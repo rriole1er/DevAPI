@@ -349,3 +349,60 @@ public function getLivres(LivreRepository $livreRepository ) : Response
 
 ```
 
+- On test les routes : 
+```
+http://localhost:8000/api/livres
+http://localhost:8000/api/auteurs
+```
+
+- Une erreur se produit
+```ERROR
+- 502 bad Gateway // C'est une erreur serveur WEB
+```
+
+
+## La route `api/auteurs`, methode=GET, ajout de l'annotation @Groups pour les auteurs
+
+- @Groups({"liste_livres","liste_auteurs"}) dans les attributs
+- Serializez dans le controleur auteurs
+- La route api/auteurs/1 ne fonctionne pas 
+
+
+## La route `/api/auteurs/{id}`, methode=GET, ajout de l'annotation @Groups pour les auteurs
+
+- Serialize dans le contrleur auteurs ['groups' => ['liste_auteurs']]
+
+
+## La route `/api/livres/{id}`, methode=POST, ajout de l'annotation @Groups pour les auteurs
+
+- On copie la route /api/livres/{id} de auteur et remplace par livres (get, post, delete)
+
+- On passe de quoi construire un auteur mais pas qu'on voudrait le persister dans la BD donc ca ne marche pas
+
+- Il faut donc passer par une séréalisation manuelle pour faire persister la data
+
+```php
+public function postLivre(Request $request, LivreRepository $livreRepository, AuteurRepository $auteurRepository){
+
+          $data = $request->toArray();
+          $livre = new Livre();
+          $livre->setTitre($data["titre"]);
+          $livre->setAnnee($data["annee"]);
+          $auteur = $auteurRepository->find($data["auteur"]["id"]);
+          $livre->setAuteur($auteur);
+          
+          $livreRepository->add($livre, true);
+
+        return new JsonResponse("",Response::HTTP_CREATED,[],true);
+}
+```
+
+- Dans la route localhost:8080/api/auteurs/2, il possede 2 livres
+
+## La route `/api/livres`, methode = DELETE
+
+## BILAN 
+
+- Les references entre attributs sont complexes, il faut faire attention a ne pas se tromper, utiliser les groups pour eviter les references circulaires,
+- Serializer à la main pour bien faire persister dans la base de donnée 
+

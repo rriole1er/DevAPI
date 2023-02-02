@@ -21,7 +21,7 @@ class AuteurController extends AbstractController
     public function getAuteurs(AuteurRepository $auteurRepository,SerializerInterface $serializer) : Response
     {
         $auteurs = $auteurRepository->findAll();
-        $auteursJson= $serializer->serialize($auteurs,'json');
+        $auteursJson= $serializer->serialize($auteurs,'json',['groups' => ['liste_auteurs']]);
         return new JsonResponse($auteursJson,200,[],true);
 
     }
@@ -33,13 +33,13 @@ class AuteurController extends AbstractController
      */
     public function getAuteur(Auteur $auteur, SerializerInterface $serializer) : Response
     {
-        $auteurJson= $serializer->serialize($auteur,'json');
+        $auteurJson= $serializer->serialize($auteur,'json',['groups' => ['liste_auteurs']]);
         return new JsonResponse($auteurJson,200,[],true);
     }
 
 
     /**
-     * @Route("/api/auteurs/",
+     * @Route("/api/auteurs",
      *     name="post_auteur_api",
      *     methods={"POST"})
      */
@@ -52,7 +52,7 @@ class AuteurController extends AbstractController
     }
 
     /**
-     * @Route("/api/auteurs/",
+     * @Route("/api/auteurs",
      *     name="delete_auteur_api",
      *     methods={"DELETE"})
      */

@@ -15,26 +15,26 @@ class Livre
      * @ORM\Id
      * @ORM\GeneratedValue
      * @ORM\Column(type="integer")
-     * @Groups("liste_livres")
+     * @Groups({"liste_livres","liste_auteurs"})
      */
     private $id;
 
     /**
      * @ORM\Column(type="string", length=255)
-     * @Groups("liste_livres")
+     * @Groups({"liste_livres","liste_auteurs"})
      */
     private $titre;
 
     /**
      * @ORM\Column(type="integer")
-     * @Groups("liste_livres")
+     * @Groups({"liste_livres","liste_auteurs"})
      */
     private $annee;
 
     /**
      * @ORM\ManyToOne(targetEntity=Auteur::class, inversedBy="livre")
      * @ORM\JoinColumn(nullable=false)
-     * @Groups("liste_livres")
+     * @Groups({"liste_livres"})
      */
     private $auteur;
 

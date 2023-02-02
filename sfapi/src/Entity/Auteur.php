@@ -17,24 +17,26 @@ class Auteur
      * @ORM\Id
      * @ORM\GeneratedValue
      * @ORM\Column(type="integer")
-     * @Groups("liste_livres")
+     * @Groups({"liste_livres","liste_auteurs"})
+     *
      */
     private $id;
 
     /**
      * @ORM\Column(type="string", length=255)
-     * @Groups("liste_livres")
+     * @Groups({"liste_livres","liste_auteurs"})
      */
     private $name;
 
     /**
      * @ORM\Column(type="string", length=255)
-     * @Groups("liste_livres")
+     * @Groups({"liste_livres","liste_auteurs"})
      */
     private $prenom;
 
     /**
      * @ORM\OneToMany(targetEntity=Livre::class, mappedBy="auteur")
+     * @Groups({"liste_auteurs"})
      */
     private $livre;
 
