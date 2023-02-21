@@ -412,3 +412,125 @@ public function postLivre(Request $request, LivreRepository $livreRepository, Au
 - reutiliser le code souces des routes
 - On peut avoir une bibliothèque permettant de crér le routes de l'API
 - API plateform, automatiser la création du routage donc API, création d'entités et généralement le OpenAPis (openapis.org)
+
+
+**R4.01 Architecture Logicielle - Developpement d'API**
+
+---
+
+**API Plateform**
+**Installation**
+**Application API**
+
+---
+
+## Pré-requis
+
+1. Stack docker demarrée
+2. conteneur sfapi démaré
+3. être dans le bash
+
+## Installlation 
+```sh
+composer require api
+```
+
+```
+api-platforme/core
+Aliases api api-plateform
+```
+
+Probleme : 
+  l'install exige le symofny serializer donc on fait :
+
+```
+composer require serializer
+```
+
+** commande : **
+```
+composer recipes api-platform/core
+```
+
+** Résultat **
+```
+name             : api-platform/core
+version          : 2.5
+status           : up to date
+installed recipe : https://github.com/symfony/recipes/tree/1aa7d46/api-platform/core/2.5
+files            : 
+
+├──config
+│  ├──packages
+│  │  └──api_platform.yaml
+│  └──routes
+│     └──api_platform.yaml
+└──src
+   └──Entity
+      └──.gitignore
+
+```
+
+On essaye 
+
+```
+http://localhost:8000/api
+```
+
+
+## Transformation de l'entité Àuteur`
+
+- On supprime l'attrivut `livres` et ses getteur et setteur de l'entité `Auteurs`
+- On suppprime l'annotation `@Groups`
+
+Dans l'entete de l'entité Auteurs rajouter `@ApiResource()` et inclure
+
+```php
+use ApiPlatform\Core\Annotation\ApiResource;
+```
+
+## Si rien ne change il faut faire :
+
+```
+php bin/console cache:clear
+php bin/console assets:install public
+```
+
+## Swagger : documentation d'une api 
+
+Doit être conforme avec OpenAPI
+
+Si on veut choisir un auteur en particulier :
+
+```
+http://localhost:8000/api/auteurs/34.jsonld
+```
+
+Affiche une arborescence
+
+```
+php bin/console debug:router
+```
+
+## Utilisation du profiler dans une API
+
+## Installation
+
+```sh
+
+composer require profiler --dev
+composer require debug --dev
+```
+
+## Enlever la fonction delete dans l'API
+
+- Route `App/Entity/Auteur`
+```php
+ApiResource(
+collectionOperations=("get","post"),
+itemOperations=("get","put","patch"),
+shortName="authors"
+)
+
+
+```

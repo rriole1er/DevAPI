@@ -6,9 +6,15 @@ use App\Repository\AuteurRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
-use Symfony\Component\Serializer\Annotation\Groups;
+use ApiPlatform\Core\Annotation\ApiResource;
+
 
 /**
+ * @ApiResource(
+ *     collectionOperations={"get","post"},
+ *      itemOperations={"get","put","patch"},
+ *      shortName="authors"
+ * )
  * @ORM\Entity(repositoryClass=AuteurRepository::class)
  */
 class Auteur
@@ -17,33 +23,20 @@ class Auteur
      * @ORM\Id
      * @ORM\GeneratedValue
      * @ORM\Column(type="integer")
-     * @Groups({"liste_livres","liste_auteurs"})
      *
      */
     private $id;
 
     /**
      * @ORM\Column(type="string", length=255)
-     * @Groups({"liste_livres","liste_auteurs"})
      */
     private $name;
 
     /**
      * @ORM\Column(type="string", length=255)
-     * @Groups({"liste_livres","liste_auteurs"})
      */
     private $prenom;
 
-    /**
-     * @ORM\OneToMany(targetEntity=Livre::class, mappedBy="auteur")
-     * @Groups({"liste_auteurs"})
-     */
-    private $livre;
-
-    public function __construct()
-    {
-        $this->livre = new ArrayCollection();
-    }
 
     public function getId(): ?int
     {
@@ -74,33 +67,4 @@ class Auteur
         return $this;
     }
 
-    /**
-     * @return Collection<int, Livre>
-     */
-    public function getLivre(): Collection
-    {
-        return $this->livre;
-    }
-
-    public function addLivre(Livre $livre): self
-    {
-        if (!$this->livre->contains($livre)) {
-            $this->livre[] = $livre;
-            $livre->setAuteur($this);
-        }
-
-        return $this;
-    }
-
-    public function removeLivre(Livre $livre): self
-    {
-        if ($this->livre->removeElement($livre)) {
-            // set the owning side to null (unless already changed)
-            if ($livre->getAuteur() === $this) {
-                $livre->setAuteur(null);
-            }
-        }
-
-        return $this;
-    }
 }
