@@ -3,6 +3,35 @@
 **BUT INFO**
 **R04.1**
 
+## Lancer la stack
+
+Lancer docker 
+```bash
+
+docker compose exec sfapi bash
+cd sfapi
+composer update
+php bin/console doctrine:migrations:migrate
+```
+Lancer les datas de moodle dans query sql
+
+Vider le cache quand ca marche pas
+```
+php bin/console cache:clear
+php bin/console assets:install public
+```
+
+## PhpStorm : Database, connexion a la BD `dbsfapi`
+
+```
+user: api
+password: api
+databse: dbsfapi
+port:3306
+```
+
+
+
 ---
 
 **Developpement API**
@@ -480,7 +509,7 @@ http://localhost:8000/api
 
 ## Transformation de l'entité Àuteur`
 
-- On supprime l'attrivut `livres` et ses getteur et setteur de l'entité `Auteurs`
+- On supprime l'attribut `livres` et ses getteur et setteur de l'entité `Auteurs`
 - On suppprime l'annotation `@Groups`
 
 Dans l'entete de l'entité Auteurs rajouter `@ApiResource()` et inclure
@@ -526,11 +555,179 @@ composer require debug --dev
 
 - Route `App/Entity/Auteur`
 ```php
-ApiResource(
-collectionOperations=("get","post"),
-itemOperations=("get","put","patch"),
-shortName="authors"
-)
+/**
+ * @ApiResource(
+ *     collectionOperations={"get","post"},
+ *      itemOperations={"get","put","patch"},
+ *      shortName="authors"
+ * )
+ * @ORM\Entity(repositoryClass=AuteurRepository::class)
+ */
 
 
 ```
+
+## Application : getter et setter asspcoés à un attrivut
+
+Ajoute d'un nouvel attribut de l'entité Auteur
+
+Dans l'entité Auteur, on ajoute un attribut :
+- nom attribut : createAdt
+- type : datetime_immutable
+- il peut être null
+- on peut envoer la migration si on souhaite voir les données
+
+```php
+ php bin/console make:migration
+ php bin/console doctrine:migrations:migrate
+```
+
+## La date de création d'un auteur ne doit pas être modifiable 
+
+- Avoir un champ createAdt sur la sortie n'est pas interessant, le client ne doit pas pouvoir modifier
+
+- Donc, on doit interdite l'entrée dans le champ createAdt
+
+- Trouver la methode setCreateAdt() et supprimez la
+
+on ajoute 
+
+```php
+public function __construct(){
+
+$this->createAdt = new \DateTimeImmutable();
+}
+```
+
+## Personnaliser le champ createdAdt
+
+- Disons qu'en plus du champ createAdt
+- Qui est dans un format un peu laid mais standard
+- Nous voulons également renvoyer la date sous dorme de chaîne
+- quelque chose come il y a 5 minutes
+- On installe : 
+
+```php 
+composer require nesbot/carbon
+```
+
+- Juste en dessous de la fontion getCreateAdt() on ajoute la fonction suivante :
+
+```php 
+public function getCreatedAdtAgo() : string{
+return Carbon::instance($this->getCreatedAdt())->diffForHumans();
+}
+
+```
+
+APIPlateform n'a pas besoin d'attribut, il prend juste un getter et/ou un setter pour l'afficher 
+
+## Ajouter un groupe de sérialisation de normalisaiton
+
+Rappel : normalisation = object TO array
+
+```php 
+
+/**
+ * @ApiResource(
+ *     collectionOperations={"get","post"},
+ *      itemOperations={"get","put","patch"},
+ *      shortName="authors",
+ *      normalizationContext={"groups"={"auteurs:read"}}
+ * )
+ * @ORM\Entity(repositoryClass=AuteurRepository::class)
+ */
+```
+
+- La propriété groups dans normalizationContext définit le nom du groupe à l'opération lecture des attributs de notre object pour les fournir à un array
+
+- Nous avons ajouté un tag : `read` au nom de ce groupe pour rappeler que ce groupe ezst associer a l'oépration de lecture
+
+- On ajoute groups aux attributs auteur pour lire
+
+```php
+ @Groups({"auteurs:read"})
+ ```
+
+## Ajouter un groupe de sérialisation de denormalisaiton
+
+Rappel : denormalisation =  array TO object
+
+```php 
+
+/**
+ * @ApiResource(
+ *     collectionOperations={"get","post"},
+ *      itemOperations={"get","put","patch"},
+ *      shortName="authors",
+ *      normalizationContext={"groups"={"auteurs:read"}},
+ *      denormalizationContext={"groups"={"auteurs:write"}}
+ * )
+ * @ORM\Entity(repositoryClass=AuteurRepository::class)
+ */
+```
+
+
+On ajoute groups aux attrivuts auteur pour ecrire
+
+```php
+@Groups({"auteurs:read","auteurs:write"})
+```
+
+
+affichage en lecture / ecriture ---> groups
+
+- On remarque que la propriété createdAdtAgo a disparu, pour l'ajouter on lui donne l'annotation de Groups
+
+```php 
+    /**
+     * Retournes la date de création sous un format lisible
+     * @Groups({"auteurs:read"})
+     * @return string
+     */
+    public function getCreatedAdtAgo() : string{
+
+        return Carbon::instance($this->getCreateAdt())->diffForHumans();
+    }
+```
+
+## 1. Modification de l'entité Auteur
+
+# 1.1 Ajout de l'attribut biographie
+
+Mise à jour de l'entité
+
+```php 
+php bin/console make:entity Auteur
+- nom : biographie
+- type : string
+- taille :200
+- null : 
+
+php bin/console make:migration
+php bon/console doctrine:migrations:migrate
+```
+
+Supposons maintenant, qu'un souhaite ajouter un setteur additionnel pour cet attribut qui transforme le texte brute, avec des retours de ligne '\n' en un text html par exemple. On peut ecrire ce setteur comme suit :
+
+
+```php
+    public function setTextBiographie(?string $biographie): self
+    {
+        $this->biographie = nl2br($biographie);
+
+        return $this;
+    }
+```
+
+## Objectif
+
+- La lecture de la ressource Auteur doit fournir l'attribut biographie
+
+- L'écriture de la ressource Auteur doit fournir un attribut qui s'appelle textBiographie
+
+Solution : serialisation 
+
+
+
+## Probleme 
