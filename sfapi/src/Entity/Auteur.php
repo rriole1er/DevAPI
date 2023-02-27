@@ -9,6 +9,7 @@ use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use ApiPlatform\Core\Annotation\ApiResource;
 use Symfony\Component\Serializer\Annotation\Groups;
+use Symfony\Component\Serializer\Annotation\SerializedName;
 
 
 
@@ -52,9 +53,16 @@ class Auteur
 
     /**
      * Biographie text html
+     * @ORM\Column(type="string", length=2000, nullable=true)
      * @Groups({"auteurs:read"})
      */
     private $biographie;
+
+    /**
+     * @ORM\OneToMany(targetEntity=Livre::class, mappedBy="auteur", orphanRemoval=true)
+     * @Groups({"auteurs:read"})
+     */
+    private $livres;
 
 
     public function getId(): ?int
@@ -67,17 +75,21 @@ class Auteur
         return $this->name;
     }
 
+    /*
     public function setName(string $name): self
     {
         $this->name = $name;
 
         return $this;
     }
+    */
 
     public function getPrenom(): ?string
     {
         return $this->prenom;
     }
+
+    /*
 
     public function setPrenom(string $prenom): self
     {
@@ -85,6 +97,8 @@ class Auteur
 
         return $this;
     }
+
+    */
 
     public function getCreateAdt(): ?\DateTimeImmutable
     {
@@ -101,9 +115,12 @@ class Auteur
         return Carbon::instance($this->getCreateAdt())->diffForHumans();
     }
 
-    public function __construct(){
+    public function __construct(string $name = null, string $prenom = null){
 
+        $this->name = $name;
+        $this->prenom = $prenom;
         $this->createAdt = new \DateTimeImmutable();
+        $this->livres = new ArrayCollection();
     }
 
     /**
@@ -128,10 +145,41 @@ class Auteur
     /**
      * Biographie text html
      * @Groups({"auteurs:write"})
+     * @SerializedName ("biographie")
      */
     public function setTextBiographie(?string $biographie): self
     {
         $this->biographie = nl2br($biographie);
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Livre>
+     */
+    public function getLivres(): Collection
+    {
+        return $this->livres;
+    }
+
+    public function addLivre(Livre $livre): self
+    {
+        if (!$this->livres->contains($livre)) {
+            $this->livres[] = $livre;
+            $livre->setAuteur($this);
+        }
+
+        return $this;
+    }
+
+    public function removeLivre(Livre $livre): self
+    {
+        if ($this->livres->removeElement($livre)) {
+            // set the owning side to null (unless already changed)
+            if ($livre->getAuteur() === $this) {
+                $livre->setAuteur(null);
+            }
+        }
 
         return $this;
     }

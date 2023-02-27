@@ -8,6 +8,8 @@
 Lancer docker 
 ```bash
 
+git clone https://forge.iut-larochelle.fr/rriole/2022-2023-butinfo2-r4.01-devapi
+docker compose up 
 docker compose exec sfapi bash
 cd sfapi
 composer update
@@ -728,6 +730,200 @@ Supposons maintenant, qu'un souhaite ajouter un setteur additionnel pour cet att
 
 Solution : serialisation 
 
+```php
+
+
+class Auteur
+{
+    /**
+     * Biographie text html
+     * @Groups({"auteurs:read"})
+     */
+    private $biographie;
+
+    /**
+     * Biographie text html
+     * @Groups({"auteurs:write"})
+     */
+    public function setTextBiographie(?string $biographie): self
+    {
+        $this->biographie = nl2br($biographie);
+
+        return $this;
+    }
+}
+
+```
 
 
 ## Probleme 
+
+- Si ca pouvait etre identiques ca serait simple pour les utilisateurs de l'API
+
+## Comment controller le nomage des champs
+
+Object : appeler notre champ lié à la biographie d'un auteru comme biographique en lecture ET en écriture
+
+@SerializedName
+
+```php 
+    /**
+     * Biographie text html
+     * @Groups({"auteurs:write"})
+     * @SerializedName ("biographie")
+     */
+    public function setTextBiographie(?string $biographie): self
+    {
+        $this->biographie = nl2br($biographie);
+
+        return $this;
+    }
+```
+
+
+## Contexte 
+
+Nous savons que le sérialiseur aime travailler e appelant des méthodes getter et setter, ou en utilisant des propriétés publiques ou quelques choses autres comme les méthodes hasser ou isser
+
+Mais que se passe-t-il on souhaite donner un constructeur à la classe Auteur ?
+
+## Probleme et solution
+
+Parce que chaque fois que notre entité Auteur a besoin obligatoirement d'un nom et prénom, je pense que c'est une bonnée idée de forunir ces deux attributs au construteur de cette classe.
+Par conséquent, nous avons très problablement plus besoin des setteurs setNom et setPrenom
+
+D'un point de vue orienté objet, cela rend les propriétés  nom et prenom immuable
+
+Solution :
+
+```php 
+
+    /*
+    public function setName(string $name): self
+    {
+        $this->name = $name;
+
+        return $this;
+    }
+    */
+    
+    /*
+    public function setPrenom(string $prenom): self
+    {
+        $this->prenom = $prenom;
+
+        return $this;
+    }
+    
+    */
+    
+        public function __construct(string $nom, string $prenom){
+
+        $this->name = $name;
+        $this->prenom = $prenom;
+        $this->createAdt = new \DateTimeImmutable();
+    }
+```
+
+
+## Quel conséquence pour serializer 
+
+API Plateform se fit en fonction du noms des attributs, pour lier le nom de l'attribut dans le constructeur et la base de donnée il faut le meme nom.
+
+Il faut faire attention a bien respecter les noms.
+
+## Les arguments passés au constructeur peuvent altérer la validaiton des données
+
+Mais il y a un cas limite.
+
+Imaginiez que nous créeons un nouveau auteru et que nous oublions d'envoyer entierement le nom et ou prenom, ca fera de la d
+
+Si on veut eviter cela, on doit se fier a la validation, on met les parametre en null.
+
+Pour que l'api puisse tourner.
+
+```php
+
+    public function __construct(string $name = null, string $prenom = null){
+
+        $this->name = $name;
+        $this->prenom = $prenom;
+        $this->createAdt = new \DateTimeImmutable();
+    }
+
+```
+
+Une erreur 500, c'est une erreur de la base de donnée plus de l'api si on integre un auteur null.
+
+
+
+## Contexte
+
+Nous avons une ressource Auteur et une ressource Livre
+
+Relions les ensemble 
+
+un auteur peut etre associé à plusieurs livres
+un livre est associé à un auteur
+
+## Mise a jour de l'entité Livre : @ApiResource
+
+
+On enleve l'attributs Groups de livre et les getter et setter Auteurs
+
+```php
+/**
+ * ApiResource()
+ * @ORM\Entity(repositoryClass=LivreRepository::class)
+ */
+
+```
+
+ajout d'une relation ManyToOne auteur dans attribut Livres
+
+```php
+bin/console make:migration
+bin/console doctrine:mirations:migrate
+```
+
+on verifie le getter et ca marche
+
+
+---
+
+**API Plateform**
+**Relation et IRIs**
+
+---
+
+## Contexte
+
+Si on essaie de créer un `Livre` en définissant la propriété `auteur` sur 1 : l'identifiant d'un auteur réel dans la base de données
+alors cela ne fonctionne pas !
+
+
+- Pourquoi ? Parce que API-Plateforme et dans le developpement d'api moderne ne général, nous n'utilisons pas
+d'identifiants pour faire réference à dees ressources. nous utilisons des IRIs
+
+- Lorsqu'on execute la route `GET /api/livres`:
+
+on obtient une url en reponse JSON 
+
+et si on essaie la route `GET /api/livres/{1}` : Bad Request
+
+C'est pourquoi Swagger documente l'attribut comme un "string" ... ce qui n'est pas totalement exact.
+Bien sur, à premiere vue, l'auteur est un string... et c'est ce que Swagger montre dans le modèles Livres.livre.Write
+
+Mais nous savons que c'est valeur est spéciale : elle represente un lien
+
+# Conclusion : 
+
+Une relation n'est qu'un propriété normale, sauf qu'elle est représentée dans l'API avec son IRI
+
+## API- PLATEFORME côté entité `Auteur`
+
+- Actuellement, si on exécute la route `GET /api/auteurs`, l'API renvoie toutes les données d'un auteur sauf a liste des livres associée à l'auteur
+
+Mise à jour `Auteur` :
+
+

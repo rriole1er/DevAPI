@@ -5,8 +5,14 @@ namespace App\Entity;
 use App\Repository\LivreRepository;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups;
+use ApiPlatform\Core\Annotation\ApiResource;
+
 
 /**
+ * @ApiResource(
+ *   normalizationContext={"groups"={"livres:read"}},
+ *     denormalizationContext={"groups"={"livres:write"}}
+ * )
  * @ORM\Entity(repositoryClass=LivreRepository::class)
  */
 class Livre
@@ -15,26 +21,25 @@ class Livre
      * @ORM\Id
      * @ORM\GeneratedValue
      * @ORM\Column(type="integer")
-     * @Groups({"liste_livres","liste_auteurs"})
      */
     private $id;
 
     /**
      * @ORM\Column(type="string", length=255)
-     * @Groups({"liste_livres","liste_auteurs"})
+     * @Groups({"livres:read","livres:write"})
      */
     private $titre;
 
     /**
      * @ORM\Column(type="integer")
-     * @Groups({"liste_livres","liste_auteurs"})
+     * @Groups({"livres:read","livres:write"})
      */
     private $annee;
 
     /**
-     * @ORM\ManyToOne(targetEntity=Auteur::class, inversedBy="livre")
-     * @ORM\JoinColumn(nullable=false)
-     * @Groups({"liste_livres"})
+     * @ORM\ManyToOne(targetEntity=Auteur::class, inversedBy="livres")
+     * @ORM\JoinColumn (nullable=false)
+     * @Groups({"livres:read","livres:write"})
      */
     private $auteur;
 
@@ -78,4 +83,5 @@ class Livre
 
         return $this;
     }
+
 }
