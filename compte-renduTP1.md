@@ -1188,6 +1188,6 @@ A new entity was gound trhough the relationship Livre#Auteurs tjat was not confi
 
 cela signifie que quelque chose a crée un objet nouveau, l'a defini sur la propriété Livres#Auteurs, il faut donc mettre a jour et non créer un objet
 
-
+si on veut modifier, il faut rajouter @id
 
 
