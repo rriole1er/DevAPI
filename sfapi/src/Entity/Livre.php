@@ -10,6 +10,14 @@ use ApiPlatform\Core\Annotation\ApiResource;
 
 /**
  * @ApiResource(
+ *     itemOperations={
+ *     "get"={
+ *     "normalization_context"={"groups"={"livres:read","livres:item:get"}},
+ *     },
+ *     "delete"={},
+ *     "put",
+ *     "patch",
+ *     },
  *   normalizationContext={"groups"={"livres:read"}},
  *     denormalizationContext={"groups"={"livres:write"}}
  * )
@@ -26,13 +34,13 @@ class Livre
 
     /**
      * @ORM\Column(type="string", length=255)
-     * @Groups({"livres:read","livres:write"})
+     * @Groups({"livres:read","livres:write","auteurs:item:get"})
      */
     private $titre;
 
     /**
      * @ORM\Column(type="integer")
-     * @Groups({"livres:read","livres:write"})
+     * @Groups({"livres:read","livres:write","auteurs:item:get"})
      */
     private $annee;
 

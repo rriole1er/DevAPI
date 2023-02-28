@@ -10,13 +10,19 @@ use Doctrine\ORM\Mapping as ORM;
 use ApiPlatform\Core\Annotation\ApiResource;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Serializer\Annotation\SerializedName;
+use Symfony\Component\Validator\Constraints as Assert;
 
 
 
 /**
  * @ApiResource(
  *     collectionOperations={"get","post"},
- *      itemOperations={"get","put","patch"},
+ *      *     itemOperations={
+ *     "get"={
+ *     "normalization_context"={"groups"={"auteurs:read","auteurs:item:get"}},
+ *     },
+ *     "delete"={}
+ *     },
  *      shortName="authors",
  *      normalizationContext={"groups"={"auteurs:read"}},
  *     denormalizationContext={"groups"={"auteurs:write"}}
@@ -35,13 +41,19 @@ class Auteur
 
     /**
      * @ORM\Column(type="string", length=255)
-     * @Groups({"auteurs:read","auteurs:write"})
+     * @Groups({"auteurs:read","auteurs:write","livres:item:get","livres:write"})
+     * @Assert\NotBlank(
+     *     message = "Le nom de l'auteur, ne peut pas être nul comme Jarod"
+     * )
      */
     private $name;
 
     /**
      * @ORM\Column(type="string", length=255)
-     * @Groups({"auteurs:read","auteurs:write"})
+     * @Groups({"auteurs:read","auteurs:write","livres:item:get"})
+     * @Assert\NotBlank(
+     *     message = "Le prenom de l'auteur, ne peut pas être nul comme Jarod"
+     * )
      */
     private $prenom;
 
@@ -55,6 +67,14 @@ class Auteur
      * Biographie text html
      * @ORM\Column(type="string", length=2000, nullable=true)
      * @Groups({"auteurs:read"})
+     * @Assert\NotBlank(
+     *     message = "La biographie de l'auteur, ne peut pas être nul comme Jarod"
+     * )
+     * @Assert\Length(
+     *     min = 10,
+     *     max = 2000,
+     *     maxMessage="La biographie est trop longue -2000 car"
+     * )
      */
     private $biographie;
 
@@ -75,21 +95,21 @@ class Auteur
         return $this->name;
     }
 
-    /*
+
     public function setName(string $name): self
     {
         $this->name = $name;
 
         return $this;
     }
-    */
+
 
     public function getPrenom(): ?string
     {
         return $this->prenom;
     }
 
-    /*
+
 
     public function setPrenom(string $prenom): self
     {
@@ -98,7 +118,7 @@ class Auteur
         return $this;
     }
 
-    */
+
 
     public function getCreateAdt(): ?\DateTimeImmutable
     {
@@ -110,15 +130,15 @@ class Auteur
      * @Groups({"auteurs:read"})
      * @return string
      */
-    public function getCreatedAdtAgo() : string{
+    public function getCreatedAdtAgo() : ?string{
 
-        return Carbon::instance($this->getCreateAdt())->diffForHumans();
+        if($this->getCreateAdt())
+            return Carbon::instance($this->getCreateAdt())->diffForHumans();
+        return null;
     }
 
-    public function __construct(string $name = null, string $prenom = null){
+    public function __construct(){
 
-        $this->name = $name;
-        $this->prenom = $prenom;
         $this->createAdt = new \DateTimeImmutable();
         $this->livres = new ArrayCollection();
     }

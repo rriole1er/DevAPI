@@ -926,4 +926,268 @@ Une relation n'est qu'un propriété normale, sauf qu'elle est représentée dan
 
 Mise à jour `Auteur` :
 
+```php 
+
+    public function getCreatedAdtAgo() : ?string{
+
+        if($this->getCreateAdt())
+            return Carbon::instance($this->getCreateAdt())->diffForHumans();
+        return null;
+    }
+```
+
+
+## Retourner les données des livres dans l'API Auteurs
+
+Solution
+
+Annoter dans la classe livre :
+
+````php 
+     * @Groups({"livres:read","livres:write","auteurs:read"})
+````
+
+# Conclusion
+
+Le sérialiseur sait sérialiser tous les champs du grupe `auteurs:read`.
+Il regarde d'abord toutes les données de `Auteur` qui font partie de ce groupe. Ensuite, il continue dans les autres ressource associées pour parcourir ce meme groupe et retourner les données annotées
+
+## Retourner les données des auteurs dans l' API Livres
+
+```php 
+@Groups({"auteurs:read","auteurs:write","livres:read"})
+```
+
+## Embarquer les données de ressources avec restriction sur l'opération
+
+Nous avons reussi à embarquer les données de nos ressource, et nous avons réuisi à reoutrner les données explicites, sans IRIs, avec l'opération de collection GET
+
+On veut intégrer les données d'un auteur lorsque je récupère un suel livre, mais la reponse va etre gigantesque.
+
+# Solution
+
+Dans `Livre`
+
+```php 
+/**
+ * @ApiResource(
+ *     itemOperations={
+ *     "get"={
+ *     "normalization_context"={"groups"={"livres:read","livres:item:get"}},
+ *     },
+ *     "delete"={}
+ *     },
+ *   normalizationContext={"groups"={"livres:read"}},
+ *     denormalizationContext={"groups"={"livres:write"}}
+ * )
+ * @ORM\Entity(repositoryClass=LivreRepository::class)
+ */
+ ```
+
+Dans `Auteurs`
+
+```php 
+* @Groups({"auteurs:read","auteurs:write","livres:item:get"})
+```
+
+Dans `Auteurs`
+
+```php 
+
+/**
+ * @ApiResource(
+ *     collectionOperations={"get","post"},
+ *      *     itemOperations={
+ *     "get"={
+ *     "normalization_context"={"groups"={"auteurs:read","auteurs:item:get"}},
+ *     },
+ *     "delete"={}
+ *     },
+ *      shortName="authors",
+ *      normalizationContext={"groups"={"auteurs:read"}},
+ *     denormalizationContext={"groups"={"auteurs:write"}}
+ * )
+ * @ORM\Entity(repositoryClass=AuteurRepository::class)
+ */
+
+```
+
+Dans `Livres`
+
+````php 
+
+@Groups({"livres:read","livres:write","auteurs:item:get"})
+
+````
+
+
+#
+
+---
+
+**API Plateform**
+**Validation**
+
+---
+#
+
+1) Le constructeur de l'entité `Auteurs` n'a pas de paramètres :
+
+```php 
+    public function __construct(){
+        
+        $this->createAdt = new \DateTimeImmutable();
+        $this->livres = new ArrayCollection();
+    }
+```
+
+2) On remet les setter sur name et prenom
+
+## Contexte
+
+Un client API peut envoyer de mauvaise donnnées de différentes manières :
+
+- Il peut envoyer du JSON malformé
+- ou envoyer un champ name, prenom
+- ou etre rincé
+
+Le travail de notre API est de répondre aux situations informatiques de façon cohérente afin que les erreurs puissent etre facilement comprises
+
+
+## Traitemet JSON invalide
+
+C'est l'un des dommaines dans lesquels API-Plateform excelle vraiment
+
+Si on envoie un json tout flingué, on recoit une erreur 400 de type hydra:error
+
+En gros API-Plateform gere le cas de problèmes liés à la syntaxe
+
+## Validation d'attribut
+
+si on envoie juste {}, erreur 500 internal erreur
+
+````json 
+  "hydra:description": "An exception occurred while executing a query: SQLSTATE[23000]: Integrity constraint violation: 1048 Column 'name' cannot be null",
+````
+
+en gros on peut pas, API Plateform envoie un auteur VIDE mais la BD bloque au moment de persist
+
+# Conclusion
+
+Symfony ajoute ou erreur 500, ca veut dire que l'on doit controler et décider les règles exactes pour chaque attribut
+
+
+## Validation des attributs
+
+Regles métiers pour les attributs de l'entité `Auteurs`
+
+- le nom d'un auteur ne doit pas etre null ou vide
+- le prénom d'un auteur ne doit pas etre null ou vide
+- la biographie d'un auteur ne doit pas etre null ou vide:
+  - texte de longueur min : 10
+  - texte de longueur max : 2000
+  - message en cas d'échec de validation
+
+
+```php 
+    /**
+     * Biographie text html
+     * @ORM\Column(type="string", length=2000, nullable=true)
+     * @Groups({"auteurs:read"})
+     * @Assert\NotBlank()
+     * @Assert\Length(
+     *     min = 10,
+     *     max = 2000,
+     *     maxMessage="La biographie est trop longue -2000 car"
+     * )
+     */
+     private $biographie;
+```
+
+
+Ajoutons un message personnalisé :
+
+
+```php 
+    /**
+     * @ORM\Column(type="string", length=255)
+     * @Groups({"auteurs:read","auteurs:write","livres:item:get"})
+     * @Assert\NotBlank(
+     *     message = "Le nom de l'auteur, ne peut pas être nul comme Jarod"
+     * )
+     */
+    private $name;
+
+    /**
+     * @ORM\Column(type="string", length=255)
+     * @Groups({"auteurs:read","auteurs:write","livres:item:get"})
+     * @Assert\NotBlank(
+     *     message = "Le prenom de l'auteur, ne peut pas être nul comme Jarod"
+     * )
+     */
+    private $prenom;
+
+    /**
+     * @ORM\Column(type="datetime_immutable", nullable=true)
+     * @Groups({"auteurs:read","auteurs:write"})
+     */
+    private $createAdt;
+
+    /**
+     * Biographie text html
+     * @ORM\Column(type="string", length=2000, nullable=true)
+     * @Groups({"auteurs:read"})
+     * @Assert\NotBlank(
+     *     message = "La biographie de l'auteur, ne peut pas être nul comme Jarod"
+     * )
+     * @Assert\Length(
+     *     min = 10,
+     *     max = 2000,
+     *     maxMessage="La biographie est trop longue -2000 car"
+     * )
+     */
+```
+
+## Conclusion
+
+La seule chose dont nous devons prendre en charge en tant que developpeur d'API, ce sont les règles métiers.
+Le reste est gérer par API Plateform.
+
+#
+
+---
+
+**API Plateform**
+****
+
+---
+
+#
+
+Les relation 
+
+## Mettre à jour un attribut d'une relation imbriquée
+
+
+Résultat :
+
+eh bien , la raison pour laquelle le nom d'un auteur est intégré lors de la sérialisation d'un livre est ue, au dessus du nom de l'auteru, nous avons ajouté le groupe 
+`livres:item:get`, qui est l'un des groupes utilisé da l'opération get
+
+```php 
+ @Groups({"auteurs:read","auteurs:write","livres:item:get","livres:write"})
+```
+
+
+## Envoyer des nouveaux objets ou envoyer des références à des objets
+
+Nous avons l'erreur suiviante
+```
+A new entity was gound trhough the relationship Livre#Auteurs tjat was not configured to cascade persist operations for entity
+```
+
+cela signifie que quelque chose a crée un objet nouveau, l'a defini sur la propriété Livres#Auteurs, il faut donc mettre a jour et non créer un objet
+
+
+
 
