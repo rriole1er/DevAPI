@@ -34,13 +34,13 @@ class Livre
 
     /**
      * @ORM\Column(type="string", length=255)
-     * @Groups({"livres:read","livres:write","auteurs:item:get"})
+     * @Groups({"livres:read","livres:write","auteurs:read", "auteurs:write"})
      */
     private $titre;
 
     /**
      * @ORM\Column(type="integer")
-     * @Groups({"livres:read","livres:write","auteurs:item:get"})
+     * @Groups({"livres:read","livres:write","auteurs:read", "auteurs:write"})
      */
     private $annee;
 

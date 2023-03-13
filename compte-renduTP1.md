@@ -1186,8 +1186,50 @@ Nous avons l'erreur suiviante
 A new entity was gound trhough the relationship Livre#Auteurs tjat was not configured to cascade persist operations for entity
 ```
 
+
+
 cela signifie que quelque chose a crée un objet nouveau, l'a defini sur la propriété Livres#Auteurs, il faut donc mettre a jour et non créer un objet
 
 si on veut modifier, il faut rajouter @id
 
+mapped
+
+## L'attribut de type collection est modifiable 
+
+```php 
+class Auteur
+
+    /**
+     * @ORM\OneToMany(targetEntity=Livre::class, mappedBy="auteur", orphanRemoval=true)
+     * @Groups({"auteurs:read","auteurs:write"})
+     */
+    private $livres;
+```
+
+## Créer de nouvels items par l'attribut d'une collection
+
+Pour l'instant on peut mettre que des IRI et pas un tableau JSON donc
+
+## Gérer la persistence 
+
+```php 
+    /**
+     * @ORM\OneToMany(targetEntity=Livre::class, mappedBy="auteur", orphanRemoval=true, cascade={"persist"})
+     * @Groups({"auteurs:read","auteurs:write"})
+     */
+    private $livres;
+```
+
+Cependant les contraintes de validation ne sont pas propagé aux enfants, sinon on peut envoyer des livres VIDES
+
+On fait :
+
+```php 
+    /**
+     * @ORM\OneToMany(targetEntity=Livre::class, mappedBy="auteur", orphanRemoval=true, cascade={"persist"})
+     * @Groups({"auteurs:read","auteurs:write"})
+     * Assert\Valid()
+     */
+    private $livres;
+```
 

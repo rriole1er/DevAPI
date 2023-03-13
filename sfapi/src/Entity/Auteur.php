@@ -79,8 +79,9 @@ class Auteur
     private $biographie;
 
     /**
-     * @ORM\OneToMany(targetEntity=Livre::class, mappedBy="auteur", orphanRemoval=true)
-     * @Groups({"auteurs:read"})
+     * @ORM\OneToMany(targetEntity=Livre::class, mappedBy="auteur", orphanRemoval=true, cascade={"persist"})
+     * @Groups({"auteurs:read","auteurs:write"})
+     * @Assert\Valid()
      */
     private $livres;
 
