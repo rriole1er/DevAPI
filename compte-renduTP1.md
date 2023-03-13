@@ -1233,3 +1233,121 @@ On fait :
     private $livres;
 ```
 
+
+-----
+
+**R4.01 Architecture logiciel**
+
+-----
+
+**API Plateform**
+
+**Mettre à jour une collection**
+
+**Update et Delete**
+
+-----
+
+
+
+## Update
+
+# Hypothèse
+
+on enleve la propriété `orphanRemoval ` si elle existe dans la class auteurs et 
+on execute ceci dans le PUT
+
+```json
+{
+  "livres": [
+      "/api/livres/3"
+  ],
+  "biographie": "super vie voir suer nteressfiefijsfsfslf"
+}
+```
+
+(ca marche)
+
+
+On essaie de delete avec ces lignes la
+
+```json 
+{
+
+  "livres": [
+    "/api/livres/4"
+  ]
+
+}
+```
+
+(ca marche pas) mais moi ca marche lol
+
+Il faut donc modifer le removeList
+
+## Experience 2 : Orphan Removal
+
+On ajoute la propriété oprhanRemoval=true sur l'entité `Auteur` :
+(évite les livres orphelins)
+
+```php 
+    class Auteurs
+    
+    /**
+     * @ORM\OneToMany(targetEntity=Livre::class, mappedBy="auteur", cascade={"persist"}, orphanRemoval=true)
+     * @Groups({"auteurs:read","auteurs:write"})
+     * @Assert\Valid()
+     */
+    private $livres;
+```
+
+# Filtrage et recherche
+
+## Contexte
+
+----
+
+nous savons maintenant :
+
+- comment exposer une entité etn tant que ressource API
+- plein de trucs
+
+
+Mais c'est quoi le filtrage?
+
+Notre client API - qui pourrait simplement etre react ne voudra pas toujours récupérer chaque Auteur ou livre du systeme
+
+Que se passe-t-il si vous avez besoin de truver que les livres dont le titre contient un mot ? ou par année
+de publication ? que les autres dont le nom contient une chaine ?
+
+
+## Filtrage de type de recherche sur le tire de l'entité `Livres`
+
+### Configuration
+
+```php 
+use ApiPlatform\Core\Bridge\Doctrine\ORM\Filter\SearchFilter;
+use ApiPlatform\Core\Annotation\ApiFilter;
+
+/**
+ * @ApiResource(
+ *     itemOperations={
+ *     "get"={
+ *     "normalization_context"={"groups"={"livres:read","livres:item:get"}},
+ *     },
+ *     "delete"={},
+ *     "put",
+ *     "patch",
+ *     },
+ *   normalizationContext={"groups"={"livres:read"}},
+ *     denormalizationContext={"groups"={"livres:write"}}
+ * )
+ * @ApiFilter(SearcheFilter:class, properties={"titre" : "partial"})
+ * @ORM\Entity(repositoryClass=LivreRepository::class)
+ */
+class Livre
+```
+
+----> partial = nimporte ou dans le titre
+
+

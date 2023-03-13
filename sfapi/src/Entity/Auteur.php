@@ -21,7 +21,9 @@ use Symfony\Component\Validator\Constraints as Assert;
  *     "get"={
  *     "normalization_context"={"groups"={"auteurs:read","auteurs:item:get"}},
  *     },
- *     "delete"={}
+ *     "delete"={},
+ *      "put",
+ *     "patch",
  *     },
  *      shortName="authors",
  *      normalizationContext={"groups"={"auteurs:read"}},
@@ -79,7 +81,7 @@ class Auteur
     private $biographie;
 
     /**
-     * @ORM\OneToMany(targetEntity=Livre::class, mappedBy="auteur", orphanRemoval=true, cascade={"persist"})
+     * @ORM\OneToMany(targetEntity=Livre::class, mappedBy="auteur", cascade={"persist"})
      * @Groups({"auteurs:read","auteurs:write"})
      * @Assert\Valid()
      */
