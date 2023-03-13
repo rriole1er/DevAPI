@@ -51,6 +51,21 @@ class Livre
      */
     private $auteur;
 
+    /**
+     * @ORM\Column(type="integer")
+     */
+    private $langue;
+
+    /**
+     * @ORM\Column(type="string", length=255)
+     */
+    private $isbn;
+
+    /**
+     * @ORM\Column(type="float")
+     */
+    private $prix;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -88,6 +103,42 @@ class Livre
     public function setAuteur(?Auteur $auteur): self
     {
         $this->auteur = $auteur;
+
+        return $this;
+    }
+
+    public function getLangue(): ?int
+    {
+        return $this->langue;
+    }
+
+    public function setLangue(int $langue): self
+    {
+        $this->langue = $langue;
+
+        return $this;
+    }
+
+    public function getIsbn(): ?string
+    {
+        return $this->isbn;
+    }
+
+    public function setIsbn(string $isbn): self
+    {
+        $this->isbn = $isbn;
+
+        return $this;
+    }
+
+    public function getPrix(): ?float
+    {
+        return $this->prix;
+    }
+
+    public function setPrix(float $prix): self
+    {
+        $this->prix = $prix;
 
         return $this;
     }
