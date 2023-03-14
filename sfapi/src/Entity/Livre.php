@@ -7,10 +7,12 @@ use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups;
 use ApiPlatform\Core\Annotation\ApiResource;
 use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\SearchFilter;
+use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\RangeFilter;
 use ApiPlatform\Core\Annotation\ApiFilter;
 
 
 /**
+ * @ORM\Entity(repositoryClass=LivreRepository::class)
  * @ApiResource(
  *     itemOperations={
  *     "get"={
@@ -23,8 +25,8 @@ use ApiPlatform\Core\Annotation\ApiFilter;
  *   normalizationContext={"groups"={"livres:read"}},
  *     denormalizationContext={"groups"={"livres:write"}}
  * )
- * @ApiFilter(SearcheFilter:class, properties={"titre" : "partial"})
- * @ORM\Entity(repositoryClass=LivreRepository::class)
+ * @ApiFilter(SearchFilter::class, properties={"titre" : "partial", "auteur" : "exact"})
+ * @ApiFilter(RangeFilter::class, properties={"annee"})
  */
 class Livre
 {
@@ -37,13 +39,13 @@ class Livre
 
     /**
      * @ORM\Column(type="string", length=255)
-     * @Groups({"livres:read","livres:write","auteurs:read", "auteurs:write"})
+     * @Groups({"livres:read","livres:write","auteurs:read", "auteurs:write","auteurs:item:get"})
      */
     private $titre;
 
     /**
      * @ORM\Column(type="integer")
-     * @Groups({"livres:read","livres:write","auteurs:read", "auteurs:write"})
+     * @Groups({"livres:read","livres:write","auteurs:read", "auteurs:write","auteurs:item:get"})
      */
     private $annee;
 

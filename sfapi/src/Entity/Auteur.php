@@ -8,6 +8,8 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use ApiPlatform\Core\Annotation\ApiResource;
+use ApiPlatform\Core\Annotation\ApiFilter;
+use ApiPlatform\Core\Serializer\Filter\PropertyFilter;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Serializer\Annotation\SerializedName;
 use Symfony\Component\Validator\Constraints as Assert;
@@ -25,11 +27,11 @@ use Symfony\Component\Validator\Constraints as Assert;
  *      "put",
  *     "patch",
  *     },
- *      shortName="authors",
  *      normalizationContext={"groups"={"auteurs:read"}},
  *     denormalizationContext={"groups"={"auteurs:write"}}
  * )
  * @ORM\Entity(repositoryClass=AuteurRepository::class)
+ * @ApiFilter (PropertyFilter::class)
  */
 class Auteur
 {
@@ -158,6 +160,22 @@ class Auteur
     {
         return $this->biographie;
     }
+
+    /**
+     * @return string|null
+     * @Groups("auteurs:read")
+     * @SerializedName("biographie")
+     * Symphony sait le faire tout seul
+     */
+
+    public function getShortBiographie(): ?string
+    {
+        if (strlen($this->biographie) <40){
+            return $this->biographie;
+        }
+        return substr($this->biographie,0,40).'...';
+    }
+
 
     public function setBiographie(?string $biographie): self
     {

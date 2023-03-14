@@ -1320,8 +1320,10 @@ Notre client API - qui pourrait simplement etre react ne voudra pas toujours ré
 Que se passe-t-il si vous avez besoin de truver que les livres dont le titre contient un mot ? ou par année
 de publication ? que les autres dont le nom contient une chaine ?
 
+On parle alors de filtrage ou de filtres
 
-## Filtrage de type de recherche sur le tire de l'entité `Livres`
+
+## Filtrage de type de recherche sur le titre de l'entité `Livres`
 
 ### Configuration
 
@@ -1342,12 +1344,187 @@ use ApiPlatform\Core\Annotation\ApiFilter;
  *   normalizationContext={"groups"={"livres:read"}},
  *     denormalizationContext={"groups"={"livres:write"}}
  * )
- * @ApiFilter(SearcheFilter:class, properties={"titre" : "partial"})
+ * @ApiFilter(SearcheFilter::class, properties={"titre" : "partial"})
  * @ORM\Entity(repositoryClass=LivreRepository::class)
  */
 class Livre
 ```
 
 ----> partial = nimporte ou dans le titre
+
+Ca marche et c'est incroyable.
+Il met dans l'ordre de l'id
+
+
+## Filtrage de type intervalle de valeurs sur l'année de l'entité `Livre`
+
+### Configuration 
+
+```php 
+ /**
+ * @ApiFilter(SearchFilter::class, properties={"titre" : "partial"})
+ * @ApiFilter(RangeFilter::class, properties={"annee"})
+ */
+```
+
+pour trouver les formats, curseur sur la classe 
+
+````php 
+use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\RangeFilter;
+````
+
+trois petits points en bas a droite et controle F sur ce qu'on veut 
+
+
+## Filtrage sur les propriétés 
+
+## Ou comment faire une ou plusieurs PROJECTIONS (choisir ses attributs)
+
+On voudrait reduire la taille d'une biographie par un court resumé et avoir un bouton "voir plus" pour afficher toute la biographie
+
+```php 
+
+    public function getBiographie(): ?string
+    {
+        return $this->biographie;
+    }
+
+    /**
+     * @return string|null
+     * @Groups ("auteurs:read")
+     * Symphony sait le faire tout seul
+     */
+
+    public function getShortBiographie(): ?string
+    {
+        if (strlen($this->biographie) <40){
+            return $this->biographie;
+        }
+        return substr($this->biographie,0,40).'...';
+    }
+
+```
+
+# Soucis
+
+- On affiche shortBiographie ET biographie ce qui est plutot relou
+- Il faudrait ne pas afficher biographie
+
+Use à utiliser
+
+```php 
+use ApiPlatform\Core\Annotation\ApiFilter;
+use ApiPlatform\Core\Serializer\Filter\PropertyFilter;
+
+```
+
+```php 
+ /**
+ * @ApiFilter (PropertyFilter::class)
+```
+
+Recherche :)
+
+```URL
+http://localhost:8000/api/auteurs/1.json?properties[]=name&properties[]=prenom&properties[]=shortBiographie
+```
+
+Si on demande un attribut qui n'existe pas, il ne le ramene pas mais fonctionne
+
+cahgner le nom en biographie :
+
+````php 
+    /**
+     * @return string|null
+     * @Groups("auteurs:read")
+     * @SerializedName("biographie")
+     * Symphony sait le faire tout seul
+     */
+
+    public function getShortBiographie(): ?string
+    {
+        if (strlen($this->biographie) <40){
+            return $this->biographie;
+        }
+        return substr($this->biographie,0,40).'...';
+    }
+
+````
+
+
+
+
+---
+
+**R4.01 Architecture Logicielle**
+
+----
+
+**API Plateform**
+**Filtrage & Relations **
+
+----
+
+branch gitlab etape-06
+
+----
+
+
+## Contexte 
+
+actuellement si on exécute /api/auteurs/5.jsonld :
+
+ca fait 
+
+
+## Filtrage et recherceh dans les relations
+
+
+### Configuration (1)
+
+tableau de tableau avec properties
+
+```
+http://localhost:8000/api/auteurs/1.json?properties[]=name&properties[]=prenom&properties[livres][]=titre&properties[]=shortBiographie
+```
+
+(ca marche)
+
+et on ajoute item
+
+````php 
+    /**
+     * @ORM\Column(type="string", length=255)
+     * @Groups({"livres:read","livres:write","auteurs:read", "auteurs:write","auteurs:item:get"})
+     */
+    private $titre;
+
+    /**
+     * @ORM\Column(type="integer")
+     * @Groups({"livres:read","livres:write","auteurs:read", "auteurs:write","auteurs:item:get"})
+     */
+    private $annee;
+
+````
+
+
+
+### Configuration (2)
+
+## Ajout du filtrge par auteur dans livre
+
+
+````php 
+/**
+ * @ApiFilter(SearchFilter::class, properties={"titre" : "partial", "auteur" : "exact"})
+ * @ApiFilter(RangeFilter::class, properties={"annee"})
+ */
+ class Livre
+ {}
+````
+
+on peut demander l'auteurs a partir du livres maitenant 
+
+### Configuration (3)
 
 
