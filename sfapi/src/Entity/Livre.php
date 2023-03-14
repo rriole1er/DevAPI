@@ -25,7 +25,11 @@ use ApiPlatform\Core\Annotation\ApiFilter;
  *   normalizationContext={"groups"={"livres:read"}},
  *     denormalizationContext={"groups"={"livres:write"}}
  * )
- * @ApiFilter(SearchFilter::class, properties={"titre" : "partial", "auteur" : "exact"})
+ *  * @ApiFilter (PropertyFilter::class, properties={
+ *     "titre" : "partial",
+ *     "auteur" : "exact",
+ *     "auteur.nom" : "partial"
+ * })
  * @ApiFilter(RangeFilter::class, properties={"annee"})
  */
 class Livre
