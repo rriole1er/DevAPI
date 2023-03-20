@@ -1357,4 +1357,292 @@ On ajoute par ailleurs le groupe `auteurs:item:get` aux propriétés concernées
 
 Il est désormais possible d'interroger l'auteur à partir d'un livre.
 
-### Configuration (3)
+
+
+## Étape 7 — Opérations et contrôleurs personnalisés
+
+### Contexte
+
+- Par défaut, API Platform est capable de générer les différentes routes correspondant à un CRUD classique.
+- Cependant, il est parfois nécessaire de créer des points d'entrée (endpoints) spécifiques, ce qui implique de créer de nouvelles opérations.
+
+### Étape 1 : Ajout de l'attribut `isPublished` dans l'entité Livre
+
+```php
+php bin/console make:entity Livre
+
+isPublished boolean not null
+
+// Dans attribut Livre
+
+    /**
+     * @ORM\Column(type="boolean", options={"default":"0"})
+     */
+    private $isPublished = false;
+```
+
+### Étape 2 : Ajout de l'opération d'item `publish` sur l'entité Livre
+
+```php
+/**
+ * @ORM\Entity(repositoryClass=LivreRepository::class)
+ * @ApiResource(
+ *     itemOperations={
+ *     "get"={
+ *     "normalization_context"={"groups"={"livres:read","livres:item:get"}},
+ *     },
+ *     "delete"={},
+ *     "put" = {},
+ *     "patch" = {},
+ *     "publish" = {
+ *          "method"="POST",
+ *          "path"= "/livres/{id}/publish",
+ *          "controller" = CreateLivrePublication::class
+ *      }
+ *     },
+ *   normalizationContext={"groups"={"livres:read"}},
+ *     denormalizationContext={"groups"={"livres:write"}}
+ * )
+```
+
+### Étape 3 : Mise en place du contrôleur `CreateLivrePublication`
+
+#### Création de la classe
+
+Une nouvelle classe est créée manuellement dans `src/Controller`.
+
+```php
+
+<?php
+
+use App\Entity\Livre;
+
+class CreateLivrePublication
+{
+    public function __invoke(Livre $data): Livre
+    {
+        $data->setIsPublished(true);
+        return $data;
+    }
+
+}
+```
+
+Explications :
+
+- La classe doit être « callable », c'est pourquoi elle implémente la méthode `__invoke`.
+- La méthode `__invoke` doit obligatoirement recevoir en argument l'objet concerné (ici, une instance de `Livre`), et le nom de ce paramètre doit impérativement être `$data`.
+- Enfin, la méthode `__invoke` doit renvoyer l'objet modifié.
+
+**Remarque : pour que cela fonctionne, il est impératif d'envoyer un corps de requête vide.**
+
+### Ajout de l'attribut `isPublished` aux groupes de normalisation
+
+```php
+    /**
+     * @ORM\Column(type="boolean", options={"default":"0"})
+     * @Groups({"lires:read","livres:item:get"})
+     */
+    private $isPublished = false;
+
+```
+
+### Empêcher la persistance en lecture (paramètre `read = false`)
+
+```php
+ * @ApiResource(
+ *     itemOperations={
+ *     "get"={
+ *     "normalization_context"={"groups"={"livres:read","livres:item:get"}},
+ *     },
+ *     "delete"={},
+ *     "put" = {},
+ *     "patch" = {},
+ *     "publish" = {
+ *          "method"="POST",
+ *          "path"= "/livres/{id}/publish",
+ *          "controller" = CreateLivrePublication::class,
+ *          "read" = false
+ *      }
+ *     },
+ *   normalizationContext={"groups"={"livres:read"}},
+ *     denormalizationContext={"groups"={"livres:write"}}
+ * )
+```
+
+### Validation désactivée lorsque le titre et l'année sont nuls
+
+```php
+/**
+ * @ORM\Entity(repositoryClass=LivreRepository::class)
+ * @ApiResource(
+ *     itemOperations={
+ *     "get"={
+ *     "normalization_context"={"groups"={"livres:read","livres:item:get"}},
+ *     },
+ *     "delete"={},
+ *     "put" = {},
+ *     "patch" = {},
+ *     "publish" = {
+ *          "method"="POST",
+ *          "path"= "/livres/{id}/publish",
+ *          "controller" = CreateLivrePublication::class,
+ *          "read" = false,
+ *          "validate"=false
+ *      }
+ *     },
+ *   normalizationContext={"groups"={"livres:read"}},
+ *     denormalizationContext={"groups"={"livres:write"}}
+ * )
+```
+
+### Test sur l'attribut `write` de l'annotation `@ApiResource` (opération `publish`)
+
+```php
+"publish" = {
+ *          "method"="POST",
+ *          "path"= "/livres/{id}/publish",
+ *          "controller" = CreateLivrePublication::class,
+ *          "read" = false,
+ *          "validate"=false,
+ *          "write" = false
+ *      }
+```
+
+Ce point n'a pas été totalement élucidé à ce stade.
+
+### Étape 5 : Séparation de la logique métier du contrôleur
+
+- En général, la logique métier d'un contrôleur personnalisé est bien plus complexe qu'un simple appel à un setter.
+- Pour cette raison, la bonne pratique consiste à séparer la logique du contrôleur personnalisé de la logique métier.
+
+#### Remise de l'attribut `write` à `true` dans l'annotation (persistance)
+
+```php
+"write" = true
+```
+
+#### Création d'un handler `LivrePublishHandler`, dans un dossier `Handler`
+
+```php
+
+<?php
+
+use App\Entity\Livre;
+
+class LivrePublishHandler
+{
+    public function handle(Livre $data): Livre
+    {
+        $data->setIsPublished(true);
+        return $data;
+    }
+}
+
+```
+
+#### Modification de `CreateLivrePublication`
+
+```php
+<?php
+
+namespace App\Controller;
+
+use App\Entity\Livre;
+
+class CreateLivrePublication
+{
+
+    private $bookPublishHandler;
+
+    public function __construct(LivrePublishHandler $bookPublishHandler){
+
+        $this->bookPublishHandler = $bookPublishHandler;
+    }
+
+    public function __invoke(Livre $data): Livre
+    {
+
+        return $this->bookPublishHandler->handle($data);
+    }
+
+}
+```
+
+Cette approche ne fonctionne pas : le contrôleur créé doit être conforme aux exigences de Symfony, sans quoi celui-ci le refuse.
+
+Pour le rendre conforme, il convient de procéder comme suit :
+
+```php
+class CreateLivrePublication extends AbstractController
+```
+
+### Étape 6 : Enrichissement de la documentation de la route
+
+#### Personnalisation du résumé de la route
+
+```php
+ *     "publish" = {
+ *          "method"="POST",
+ *          "path"= "/livres/{id}/publish",
+ *          "controller" = CreateLivrePublication::class,
+ *          "read" = true,
+ *          "validate"=true,
+ *          "write" = true,
+ *          "openapi_context" = {
+ *              "summary": "Publier un livre"
+ *             }
+ *      }
+```
+
+#### Description du paramètre
+
+```php
+ * @ApiResource(
+ *     itemOperations={
+ *     "get"={
+ *     "normalization_context"={"groups"={"livres:read","livres:item:get"}},
+ *     },
+ *     "delete"={},
+ *     "put" = {},
+ *     "patch" = {},
+ *     "publish" = {
+ *          "method"="POST",
+ *          "path"= "/livres/{id}/publish",
+ *          "controller" = CreateLivrePublication::class,
+ *          "read" = true,
+ *          "validate"=true,
+ *          "write" = true,
+ *          "openapi_context" = {
+ *              "summary": "Publier un livre",
+ *              "requestBody":{
+ *                  "content":{
+ *                      "application/json":{
+ *                              "schema":{},
+ *                              "example": "{}"
+ *                          }
+ *                      }
+ *                  },
+ *                "parameters":{
+ *                      {
+ *                       "in":"path",
+ *                      "name":"id",
+ *                      "required":true,
+ *                      "description":"Identifiant du livre"
+ *                      }
+ *                  }
+ *             }
+ *      }
+ *     },
+ *   normalizationContext={"groups"={"livres:read"}},
+ *     denormalizationContext={"groups"={"livres:write"}}
+ * )
+```
+
+### Application
+
+Créer la route `livres/count` telle que :
+
+- si le paramètre `published = 1` : retourne le nombre de livres publiés ;
+- si le paramètre `published = 0` : retourne le nombre de livres non publiés ;
+- si le paramètre `published = ""` : retourne le nombre total de livres.

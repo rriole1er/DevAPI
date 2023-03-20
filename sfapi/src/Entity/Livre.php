@@ -8,7 +8,11 @@ use Symfony\Component\Serializer\Annotation\Groups;
 use ApiPlatform\Core\Annotation\ApiResource;
 use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\SearchFilter;
 use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\RangeFilter;
+use ApiPlatform\Api\FilterInterface;
 use ApiPlatform\Core\Annotation\ApiFilter;
+use App\Controller\CreateLivrePublication;
+
+
 
 
 /**
@@ -20,17 +24,44 @@ use ApiPlatform\Core\Annotation\ApiFilter;
  *     },
  *     "delete"={},
  *     "put" = {},
- *     "patch" = {}
+ *     "patch" = {},
+ *     "publish" = {
+ *          "method"="POST",
+ *          "path"= "/livres/{id}/publish",
+ *          "controller" = CreateLivrePublication::class,
+ *          "read" = true,
+ *          "validate"=true,
+ *          "write" = true,
+ *          "openapi_context" = {
+ *              "summary": "Publier un livre",
+ *              "requestBody":{
+ *                  "content":{
+ *                      "application/json":{
+ *                              "schema":{},
+ *                              "example": "{}"
+ *                          }
+ *                      }
+ *                  },
+ *                "parameters":{
+ *                      {
+ *                       "in":"path",
+ *                      "name":"id",
+ *                      "required":true,
+ *                      "description":"Identifiant du livre"
+ *                      }
+ *                  }
+ *             }
+ *      }
  *     },
  *   normalizationContext={"groups"={"livres:read"}},
  *     denormalizationContext={"groups"={"livres:write"}}
  * )
- *  * @ApiFilter (PropertyFilter::class, properties={
+ *  * @ApiFilter (SearchFilter::class, properties={
  *     "titre" : "partial",
  *     "auteur" : "exact",
  *     "auteur.nom" : "partial"
  * })
- * @ApiFilter(RangeFilter::class, properties={"annee"})
+ * @ApiFilter (RangeFilter::class, properties={"annee"})
  */
 class Livre
 {
@@ -59,6 +90,12 @@ class Livre
      * @Groups({"livres:read","livres:write"})
      */
     private $auteur;
+
+    /**
+     * @ORM\Column(type="boolean", options={"default":"0"})
+     * @Groups({"lires:read","livres:item:get"})
+     */
+    private $isPublished = false;
 
     public function getId(): ?int
     {
@@ -97,6 +134,18 @@ class Livre
     public function setAuteur(?Auteur $auteur): self
     {
         $this->auteur = $auteur;
+
+        return $this;
+    }
+
+    public function isIsPublished(): ?bool
+    {
+        return $this->isPublished;
+    }
+
+    public function setIsPublished(bool $isPublished): self
+    {
+        $this->isPublished = $isPublished;
 
         return $this;
     }
