@@ -1,33 +1,27 @@
-
-**IUT La Rochelle**
-**BUT INFO**
-**R04.1**
+**IUT La Rochelle — BUT Informatique — Module R4.01 : Développement d'API avec le framework Symfony**
 
 ---
 
-**Developpement API**
-**Developpement avec le framework symfony**
+## Étape 1 — Mise en place du projet
 
----
+*Branche Gitlab : `etape01`*
 
-**Mise en place du projet**
-**Branch Gitlab - Etape01**
+### Nouveau projet sur Gitlab
 
----
+- Créer un nouveau projet vide (sans README).
+- Nom du projet : `r4.01-devapi`.
+- Slug du projet : `2022-2023-butinfo2-r4.01-devapi`.
 
-## Nouveau projet sur Gitlab
-- Créer un nouveau projet vide (sans readMe)
-- project Name : `r4.01-devapi`
-- Project slug : `2022-2023-butinfo2-r4.01-devapi`
+### La stack Docker
 
-## Le docker stack
-- Sur moodle, se trouve l'archive : `r4.01-devapi-docker-stack.zip`
-- Télécharger cette archive 
-- Désarchiver cette archive
-- Le contenu se trouve dans le dossier `r4.01-devapi-docker-stack`
-- Vérifier
+- L'archive `r4.01-devapi-docker-stack.zip` est disponible sur Moodle.
+- Télécharger cette archive.
+- Désarchiver cette archive.
+- Le contenu se trouve dans le dossier `r4.01-devapi-docker-stack`.
+- Vérifier le contenu.
 
-## Pousser la docker stack dans le projet gitlab
+### Pousser la stack Docker dans le projet Gitlab
+
 ```bash
 cd r4.01-devapi-docker-stack
 git init
@@ -39,82 +33,65 @@ git push
 git checkout -b etape01
 ```
 
-
-## Démarrer la docker stack
+### Démarrer la stack Docker
 
 ```
 docker compose up --build 
 ```
 
-## Créer le projet sfapi
+### Créer le projet `sfapi`
 
 ```bash
 docker compose exec sfapi bash
 composer install
 
 composer create-project symfony/skeleton:"^5.4" sfapi
-````
+```
 
-## Verifier 
+### Vérifier l'installation
+
 http://localhost:8000
 
-### Seance TP 26 janv
+*Séance du 26 janvier.*
 
----
+### Ajout du support des en-têtes CORS
 
-**Ajout du support des en-têtes CORS**
+Application Symfony `sfapi`.
 
-**Application Symfony `sfapi`**
+#### Recette officielle et documentation
 
----
-
-**branch gitlab - etape01**
-
----
-
-### Recette officielle et documentation
 https://github.com/symfony/recipes/blob/flex/main/RECIPES.md
 
 https://github.com/symfony/recipes/tree/main/nelmio/cors-bundle/1.5
 
-### A faire
+#### Mise en œuvre
 
-- Se connecter au conteneur du service `sfapi`
-- puis :
+- Se connecter au conteneur du service `sfapi`, puis exécuter :
 
 ```
 cd sfapi
 composer req cors
 ```
 
-- consulter le fichier `sfapi/config/package/nelmio_cors.yaml``
-- consulter le fichier `sfapi/.env`, et la vlauer de la env var `CORS_ALLOW_ORIGIN`
+- Consulter le fichier `sfapi/config/package/nelmio_cors.yaml`.
+- Consulter le fichier `sfapi/.env` et la valeur de la variable d'environnement `CORS_ALLOW_ORIGIN`.
 
-### Fin de l'étape et mise a jour du git
-
+#### Fin de l'étape et mise à jour du dépôt Git
 
 `git commit -m "fin install cros"`
 
-#### Bilan
+### Bilan
 
-- Demarrage du projet : Ne pas refaire le squelette de symfony, se mettre sur la bonne branche
-
-- Installer cors : Si ca ne fonctionne pas, faire composer install 
-
+- Démarrage du projet : ne pas recréer le squelette Symfony, mais se positionner sur la branche Git appropriée.
+- Installation de CORS : en cas de dysfonctionnement, exécuter `composer install`.
 
 ---
 
-**Developpement API**
-**Developpement avec le framework symfony**
+## Étape 2 — Modèle de domaine, entités et migration
 
----
+*Branche Gitlab : `etape02`*
 
-**Mise en place du projet**
-**Branch Gitlab - Etape02**
-
----
-
-## Créer la branche `etape02`
+### Créer la branche `etape02`
 
 ```
 git branch
@@ -122,7 +99,7 @@ git checkout -b etape02
 git push --set-upstream origin etape02
 ```
 
-## Modele du domaine
+### Modèle du domaine
 
 ```plantuml
 @startuml
@@ -140,7 +117,7 @@ package "Modèle du domain" #DDDDDD{
 @enduml
 ```
 
-## Créer les entités 
+### Créer les entités
 
 ```
 composer require doctrine/annotations
@@ -149,16 +126,16 @@ composer require symfony/maker-bundle --dev
 php bin/console make:entity
 ```
 
-## Lancer la migration de la BD
+### Lancer la migration de la base de données
 
-Modifier le .env par :  DATABASE_URL="mysql://api:api@database:3306/dbsfapi?serverVersion=10.10.2"
+Modifier le fichier `.env` avec : `DATABASE_URL="mysql://api:api@database:3306/dbsfapi?serverVersion=10.10.2"`
 
 ```
 php bin/console make:migration
 php bin/console doctrine:migrations:migrate
 ```
 
-## PhpStorm : Database, connexion a la BD `dbsfapi`
+### PhpStorm : connexion à la base de données `dbsfapi`
 
 ```
 user: api
@@ -166,47 +143,40 @@ password: api
 databse: dbsfapi
 port:3306
 ```
-## Bilan
 
-Repondre aux questions :
-- Qu'est ce j'ai fait ? : J'ai mis en place une stack technique 
+### Bilan
 
-- Qu'est ce que j'ai appris ? La conjugaison du verbe faire (j'ai fait et non j'ai fais !)
-
+Cette étape a permis de mettre en place la stack technique complète du projet : conteneurs Docker, application Symfony, modélisation du domaine (entités `Auteur` et `Livre`), génération des entités Doctrine, création et exécution de la migration de base de données, ainsi que la configuration de la connexion à la base `dbsfapi` depuis PhpStorm.
 
 ---
 
-**Developper une API à base du routage de Symfony**
+## Étape 3.1 — Routage de l'entité `Auteur`
 
----
+*Branche Gitlab : `etape03-1`*
 
-**Application à l'entité `Auteur`**
-**Branch Gitlab - Etape03-1**
+Développement d'une API à base du routage de Symfony, appliqué à l'entité `Auteur`.
 
----
+### Objectifs
 
-## Objectf
--Comprendre et maîtriser le routage Sf
--Mettre en oeuvre le routage pour l'entité `Auteur`
--GET (*), GET (1) (select)
--POST (insert)
--DELETE (delete)
+- Comprendre et maîtriser le routage Symfony.
+- Mettre en œuvre le routage pour l'entité `Auteur` :
+  - GET (liste complète), GET (par identifiant, sélection unitaire)
+  - POST (insertion)
+  - DELETE (suppression)
 
+### Contrôleur `AuteurController`
 
-## Controleur `AuteurController`
-
-mettre à jour les annotations dans composer.json : "doctrine/annotations" : "^1.0"
+Mettre à jour les annotations dans `composer.json` : `"doctrine/annotations" : "^1.0"`.
 
 ```
 php bin/console make:controller AuteurController --no-template
 http://localhost:8000/auteur
 ```
 
-## Definir les routes API dans le controler `AuteurController`
+### Définir les routes API dans le contrôleur `AuteurController`
 
-### La route `/api/auteurs`, methode=GET
+#### Route `/api/auteurs` (méthode GET)
 
-- Route `/api/auteurs`
 ```php
 
 public function getAuteurs(AuteurRepository $auteurRepository ) : Response
@@ -219,11 +189,12 @@ public function getAuteurs(AuteurRepository $auteurRepository ) : Response
 
 ```
 
-- On installe la sérialisation 
+Installation du composant de sérialisation :
+
 ```bash
 composer require serializer
 ```
-livre
+
 ```php 
 
 public function getAuteurs(AuteurRepository $auteurRepository, SerializerInterface $serializer ) : JsonResponse
@@ -235,31 +206,32 @@ public function getAuteurs(AuteurRepository $auteurRepository, SerializerInterfa
 }
 ```
 
-### La route `/api/auteurs/{id}`; methode=GET           // Version 1
-    ```php 
-    
-    public function getAuteurs(Request $request, SerializerInterface $serializer, AuteurRepository $auteurRepository ) : JsonResponse
-    {
-            $auteur = $auteurRepository->findOneBy(array('id' => $request->get('id')));
-            $auteurJson= $serializer->serialize($auteur,'json');
-            return new JsonResponse($auteurJson,200,[],true);
-    }
-    
-    ```
+#### Route `/api/auteurs/{id}` (méthode GET) — Version 1
 
+```php 
 
-### La route `/api/auteurs/{id}`; methode=GET           // Version 2
-    ```php 
-    
-    public function getAuteurs(SerializerInterface $serializer, AuteurRepository $auteurRepository ) : JsonResponse
-    {
-            $auteurJson= $serializer->serialize($auteur,'json');
-            return new JsonResponse($auteurJson,200,[],true);
-    }
-    
-    ```
+public function getAuteurs(Request $request, SerializerInterface $serializer, AuteurRepository $auteurRepository ) : JsonResponse
+{
+        $auteur = $auteurRepository->findOneBy(array('id' => $request->get('id')));
+        $auteurJson= $serializer->serialize($auteur,'json');
+        return new JsonResponse($auteurJson,200,[],true);
+}
 
-### La route `/api/auteurs`
+```
+
+#### Route `/api/auteurs/{id}` (méthode GET) — Version 2
+
+```php 
+
+public function getAuteurs(SerializerInterface $serializer, AuteurRepository $auteurRepository ) : JsonResponse
+{
+        $auteurJson= $serializer->serialize($auteur,'json');
+        return new JsonResponse($auteurJson,200,[],true);
+}
+
+```
+
+#### Route `/api/auteurs` (méthode POST)
 
 ```php
 
@@ -273,7 +245,7 @@ public function postAuteur(Request $request,SerializerInterface $serializer, Aut
 
 ```
 
-### La route `/api/auteurs`, methods=DELETE
+#### Route `/api/auteurs` (méthode DELETE)
 
 ```php 
 public function deleteAuteur(Auteur $auteur, AuteurRepository $repository) : Response{
@@ -283,45 +255,34 @@ public function deleteAuteur(Auteur $auteur, AuteurRepository $repository) : Res
     }
 ```
 
-## BILAN 
+### Bilan
 
-- Comprendre et maitrise le routage SF
-- -techniquement c'est lannotation qui fait le routage
-  - Mettre en oeuvre le routage ppur l'entité `Auteur`
-    - GET
-    - POST
-    - DELETE
-
-
----
-
-**Developper une API à base du routage de Symfony**
-
----
-
-**Application à l'entité `Livre`**
-**Branch Gitlab - Etape03-2**
-
----
-
-## Objectf
--Comprendre et maîtriser le routage Sf
--Mettre en oeuvre le routage pour l'entité `Livre`
--GET (*), GET (1) (select)
--POST (insert)
--DELETE (delete)
+- Compréhension et maîtrise du routage Symfony : techniquement, c'est l'annotation qui définit le routage.
+- Mise en œuvre du routage pour l'entité `Auteur` :
+  - GET
+  - POST
+  - DELETE
 
 
-## Controleur `LivreController`
+## Étape 3.2 — Routage de l'entité Livre
+
+### Objectifs
+- Comprendre et maîtriser le routage Symfony
+- Mettre en œuvre le routage pour l'entité `Livre`
+- GET (*), GET (1) (sélection)
+- POST (insertion)
+- DELETE (suppression)
+
+### Contrôleur `LivreController`
 
 ```
 php bin/console make:controller LivreController --no-template
 ```
 
-## Jeu de test pour les livres
-- Ajouter les livres
+### Jeu de test pour les livres
+- Ajout des livres
 
-- Route `/api/livres methode=GET`
+- Route `/api/livres`, méthode GET
 ```php
 
 public function getLivres(LivreRepository $livreRepository ) : Response
@@ -333,7 +294,7 @@ public function getLivres(LivreRepository $livreRepository ) : Response
 }
 
 ```
-- serializer groups
+- Groupes de sérialisation
 
 ```
     /**
@@ -349,37 +310,34 @@ public function getLivres(LivreRepository $livreRepository ) : Response
 
 ```
 
-- On test les routes : 
+- Test des routes :
 ```
 http://localhost:8000/api/livres
 http://localhost:8000/api/auteurs
 ```
 
-- Une erreur se produit
+- Une erreur se produit :
 ```ERROR
 - 502 bad Gateway // C'est une erreur serveur WEB
 ```
 
-
-## La route `api/auteurs`, methode=GET, ajout de l'annotation @Groups pour les auteurs
+### La route `/api/auteurs`, méthode GET — ajout de l'annotation @Groups pour les auteurs
 
 - @Groups({"liste_livres","liste_auteurs"}) dans les attributs
-- Serializez dans le controleur auteurs
-- La route api/auteurs/1 ne fonctionne pas 
+- Sérialisation dans le contrôleur des auteurs
+- La route `/api/auteurs/1` ne fonctionne pas
 
+### La route `/api/auteurs/{id}`, méthode GET — ajout de l'annotation @Groups pour les auteurs
 
-## La route `/api/auteurs/{id}`, methode=GET, ajout de l'annotation @Groups pour les auteurs
+- Sérialisation dans le contrôleur des auteurs : `['groups' => ['liste_auteurs']]`
 
-- Serialize dans le contrleur auteurs ['groups' => ['liste_auteurs']]
+### La route `/api/livres/{id}`, méthode POST — ajout de l'annotation @Groups pour les auteurs
 
+- La route `/api/livres/{id}` a été reprise de celle des auteurs, en adaptant les références (GET, POST, DELETE) à l'entité livres
 
-## La route `/api/livres/{id}`, methode=POST, ajout de l'annotation @Groups pour les auteurs
+- Les données transmises permettent de construire un auteur, mais celui-ci n'est pas destiné à être persisté en base de données : la sérialisation automatique ne fonctionne donc pas dans ce cas
 
-- On copie la route /api/livres/{id} de auteur et remplace par livres (get, post, delete)
-
-- On passe de quoi construire un auteur mais pas qu'on voudrait le persister dans la BD donc ca ne marche pas
-
-- Il faut donc passer par une séréalisation manuelle pour faire persister la data
+- Il est par conséquent nécessaire de passer par une sérialisation manuelle afin de permettre la persistance des données
 
 ```php
 public function postLivre(Request $request, LivreRepository $livreRepository, AuteurRepository $auteurRepository){
@@ -397,18 +355,18 @@ public function postLivre(Request $request, LivreRepository $livreRepository, Au
 }
 ```
 
-- Dans la route localhost:8080/api/auteurs/2, il possede 2 livres
+- Sur la route `localhost:8080/api/auteurs/2`, l'auteur possède 2 livres
 
-## La route `/api/livres`, methode = DELETE
+### La route `/api/livres`, méthode DELETE
 
-## BILAN 
+### BILAN
 
-- Les controlleur sont similaires, ressemblance entres les POST reponse HTTP
-- Les references entre attributs sont complexes, il faut faire attention a ne pas se tromper, utiliser les groups pour eviter les references circulaires,
-- Serializer à la main pour bien faire persister dans la base de donnée 
+- Les contrôleurs présentent des similitudes, notamment une ressemblance entre les réponses HTTP des méthodes POST
+- Les références entre attributs sont complexes ; il convient d'y prêter attention et d'utiliser les groupes de sérialisation pour éviter les références circulaires
+- Une sérialisation manuelle est nécessaire pour garantir la persistance correcte des données en base
 
-## Conclusion 
+### Conclusion
 
-- reutiliser le code souces des routes
-- On peut avoir une bibliothèque permettant de crér le routes de l'API
-- API plateform, automatiser la création du routage donc API, création d'entités et généralement le OpenAPis (openapis.org)
+- Réutiliser le code source des routes
+- Il est possible de s'appuyer sur une bibliothèque permettant de créer les routes de l'API
+- API Platform permet d'automatiser la création du routage de l'API ainsi que la création des entités, généralement en s'appuyant sur la spécification OpenAPI (openapis.org)
