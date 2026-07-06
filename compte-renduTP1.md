@@ -1,11 +1,8 @@
-
-**IUT La Rochelle**
-**BUT INFO**
-**R04.1**
+**IUT La Rochelle — BUT Informatique — Module R4.01 : Développement d'API avec le framework Symfony**
 
 ## Lancer la stack
 
-Lancer docker 
+Démarrer Docker :
 ```bash
 
 git clone https://forge.iut-larochelle.fr/rriole/2022-2023-butinfo2-r4.01-devapi
@@ -15,15 +12,15 @@ cd sfapi
 composer update
 php bin/console doctrine:migrations:migrate
 ```
-Lancer les datas de moodle dans query sql
+Charger les données de démonstration (issues de Moodle) via une requête SQL.
 
-Vider le cache quand ca marche pas
+Vider le cache en cas de dysfonctionnement :
 ```
 php bin/console cache:clear
 php bin/console assets:install public
 ```
 
-## PhpStorm : Database, connexion a la BD `dbsfapi`
+## PhpStorm : connexion à la base de données `dbsfapi`
 
 ```
 user: api
@@ -32,33 +29,28 @@ databse: dbsfapi
 port:3306
 ```
 
-
-
 ---
 
-**Developpement API**
-**Developpement avec le framework symfony**
+## Étape 1 — Mise en place du projet
 
----
+*Branche Gitlab : `etape01`*
 
-**Mise en place du projet**
-**Branch Gitlab - Etape01**
+### Nouveau projet sur Gitlab
 
----
+- Créer un nouveau projet vide (sans README).
+- Nom du projet : `r4.01-devapi`.
+- Slug du projet : `2022-2023-butinfo2-r4.01-devapi`.
 
-## Nouveau projet sur Gitlab
-- Créer un nouveau projet vide (sans readMe)
-- project Name : `r4.01-devapi`
-- Project slug : `2022-2023-butinfo2-r4.01-devapi`
+### La stack Docker
 
-## Le docker stack
-- Sur moodle, se trouve l'archive : `r4.01-devapi-docker-stack.zip`
-- Télécharger cette archive 
-- Désarchiver cette archive
-- Le contenu se trouve dans le dossier `r4.01-devapi-docker-stack`
-- Vérifier
+- L'archive `r4.01-devapi-docker-stack.zip` est disponible sur Moodle.
+- Télécharger cette archive.
+- Désarchiver cette archive.
+- Le contenu se trouve dans le dossier `r4.01-devapi-docker-stack`.
+- Vérifier le contenu.
 
-## Pousser la docker stack dans le projet gitlab
+### Pousser la stack Docker dans le projet Gitlab
+
 ```bash
 cd r4.01-devapi-docker-stack
 git init
@@ -70,82 +62,65 @@ git push
 git checkout -b etape01
 ```
 
-
-## Démarrer la docker stack
+### Démarrer la stack Docker
 
 ```
 docker compose up --build 
 ```
 
-## Créer le projet sfapi
+### Créer le projet `sfapi`
 
 ```bash
 docker compose exec sfapi bash
 composer install
 
 composer create-project symfony/skeleton:"^5.4" sfapi
-````
+```
 
-## Verifier 
+### Vérifier l'installation
+
 http://localhost:8000
 
-### Seance TP 26 janv
+*Séance du 26 janvier.*
 
----
+### Ajout du support des en-têtes CORS
 
-**Ajout du support des en-têtes CORS**
+Application Symfony `sfapi`.
 
-**Application Symfony `sfapi`**
+#### Recette officielle et documentation
 
----
-
-**branch gitlab - etape01**
-
----
-
-### Recette officielle et documentation
 https://github.com/symfony/recipes/blob/flex/main/RECIPES.md
 
 https://github.com/symfony/recipes/tree/main/nelmio/cors-bundle/1.5
 
-### A faire
+#### Mise en œuvre
 
-- Se connecter au conteneur du service `sfapi`
-- puis :
+- Se connecter au conteneur du service `sfapi`, puis exécuter :
 
 ```
 cd sfapi
 composer req cors
 ```
 
-- consulter le fichier `sfapi/config/package/nelmio_cors.yaml``
-- consulter le fichier `sfapi/.env`, et la vlauer de la env var `CORS_ALLOW_ORIGIN`
+- Consulter le fichier `sfapi/config/package/nelmio_cors.yaml`.
+- Consulter le fichier `sfapi/.env` et la valeur de la variable d'environnement `CORS_ALLOW_ORIGIN`.
 
-### Fin de l'étape et mise a jour du git
-
+#### Fin de l'étape et mise à jour du dépôt Git
 
 `git commit -m "fin install cros"`
 
-#### Bilan
+### Bilan
 
-- Demarrage du projet : Ne pas refaire le squelette de symfony, se mettre sur la bonne branche
-
-- Installer cors : Si ca ne fonctionne pas, faire composer install 
-
+- Démarrage du projet : ne pas recréer le squelette Symfony, mais se positionner sur la branche Git appropriée.
+- Installation de CORS : en cas de dysfonctionnement, exécuter `composer install`.
 
 ---
 
-**Developpement API**
-**Developpement avec le framework symfony**
+## Étape 2 — Modèle de domaine, entités et migration
 
----
+*Branche Gitlab : `etape02`*
 
-**Mise en place du projet**
-**Branch Gitlab - Etape02**
-
----
-
-## Créer la branche `etape02`
+### Créer la branche `etape02`
 
 ```
 git branch
@@ -153,7 +128,7 @@ git checkout -b etape02
 git push --set-upstream origin etape02
 ```
 
-## Modele du domaine
+### Modèle du domaine
 
 ```plantuml
 @startuml
@@ -171,7 +146,7 @@ package "Modèle du domain" #DDDDDD{
 @enduml
 ```
 
-## Créer les entités 
+### Créer les entités
 
 ```
 composer require doctrine/annotations
@@ -180,16 +155,16 @@ composer require symfony/maker-bundle --dev
 php bin/console make:entity
 ```
 
-## Lancer la migration de la BD
+### Lancer la migration de la base de données
 
-Modifier le .env par :  DATABASE_URL="mysql://api:api@database:3306/dbsfapi?serverVersion=10.10.2"
+Modifier le fichier `.env` avec : `DATABASE_URL="mysql://api:api@database:3306/dbsfapi?serverVersion=10.10.2"`
 
 ```
 php bin/console make:migration
 php bin/console doctrine:migrations:migrate
 ```
 
-## PhpStorm : Database, connexion a la BD `dbsfapi`
+### PhpStorm : connexion à la base de données `dbsfapi`
 
 ```
 user: api
@@ -197,47 +172,40 @@ password: api
 databse: dbsfapi
 port:3306
 ```
-## Bilan
 
-Repondre aux questions :
-- Qu'est ce j'ai fait ? : J'ai mis en place une stack technique 
+### Bilan
 
-- Qu'est ce que j'ai appris ? La conjugaison du verbe faire (j'ai fait et non j'ai fais !)
-
+Cette étape a permis de mettre en place la stack technique complète du projet : conteneurs Docker, application Symfony, modélisation du domaine (entités `Auteur` et `Livre`), génération des entités Doctrine, création et exécution de la migration de base de données, ainsi que la configuration de la connexion à la base `dbsfapi` depuis PhpStorm.
 
 ---
 
-**Developper une API à base du routage de Symfony**
+## Étape 3.1 — Routage de l'entité `Auteur`
 
----
+*Branche Gitlab : `etape03-1`*
 
-**Application à l'entité `Auteur`**
-**Branch Gitlab - Etape03-1**
+Développement d'une API à base du routage de Symfony, appliqué à l'entité `Auteur`.
 
----
+### Objectifs
 
-## Objectf
--Comprendre et maîtriser le routage Sf
--Mettre en oeuvre le routage pour l'entité `Auteur`
--GET (*), GET (1) (select)
--POST (insert)
--DELETE (delete)
+- Comprendre et maîtriser le routage Symfony.
+- Mettre en œuvre le routage pour l'entité `Auteur` :
+  - GET (liste complète), GET (par identifiant, sélection unitaire)
+  - POST (insertion)
+  - DELETE (suppression)
 
+### Contrôleur `AuteurController`
 
-## Controleur `AuteurController`
-
-mettre à jour les annotations dans composer.json : "doctrine/annotations" : "^1.0"
+Mettre à jour les annotations dans `composer.json` : `"doctrine/annotations" : "^1.0"`.
 
 ```
 php bin/console make:controller AuteurController --no-template
 http://localhost:8000/auteur
 ```
 
-## Definir les routes API dans le controler `AuteurController`
+### Définir les routes API dans le contrôleur `AuteurController`
 
-### La route `/api/auteurs`, methode=GET
+#### Route `/api/auteurs` (méthode GET)
 
-- Route `/api/auteurs`
 ```php
 
 public function getAuteurs(AuteurRepository $auteurRepository ) : Response
@@ -250,11 +218,12 @@ public function getAuteurs(AuteurRepository $auteurRepository ) : Response
 
 ```
 
-- On installe la sérialisation 
+Installation du composant de sérialisation :
+
 ```bash
 composer require serializer
 ```
-livre
+
 ```php 
 
 public function getAuteurs(AuteurRepository $auteurRepository, SerializerInterface $serializer ) : JsonResponse
@@ -266,31 +235,32 @@ public function getAuteurs(AuteurRepository $auteurRepository, SerializerInterfa
 }
 ```
 
-### La route `/api/auteurs/{id}`; methode=GET           // Version 1
-    ```php 
-    
-    public function getAuteurs(Request $request, SerializerInterface $serializer, AuteurRepository $auteurRepository ) : JsonResponse
-    {
-            $auteur = $auteurRepository->findOneBy(array('id' => $request->get('id')));
-            $auteurJson= $serializer->serialize($auteur,'json');
-            return new JsonResponse($auteurJson,200,[],true);
-    }
-    
-    ```
+#### Route `/api/auteurs/{id}` (méthode GET) — Version 1
 
+```php 
 
-### La route `/api/auteurs/{id}`; methode=GET           // Version 2
-    ```php 
-    
-    public function getAuteurs(SerializerInterface $serializer, AuteurRepository $auteurRepository ) : JsonResponse
-    {
-            $auteurJson= $serializer->serialize($auteur,'json');
-            return new JsonResponse($auteurJson,200,[],true);
-    }
-    
-    ```
+public function getAuteurs(Request $request, SerializerInterface $serializer, AuteurRepository $auteurRepository ) : JsonResponse
+{
+        $auteur = $auteurRepository->findOneBy(array('id' => $request->get('id')));
+        $auteurJson= $serializer->serialize($auteur,'json');
+        return new JsonResponse($auteurJson,200,[],true);
+}
 
-### La route `/api/auteurs`
+```
+
+#### Route `/api/auteurs/{id}` (méthode GET) — Version 2
+
+```php 
+
+public function getAuteurs(SerializerInterface $serializer, AuteurRepository $auteurRepository ) : JsonResponse
+{
+        $auteurJson= $serializer->serialize($auteur,'json');
+        return new JsonResponse($auteurJson,200,[],true);
+}
+
+```
+
+#### Route `/api/auteurs` (méthode POST)
 
 ```php
 
@@ -304,7 +274,7 @@ public function postAuteur(Request $request,SerializerInterface $serializer, Aut
 
 ```
 
-### La route `/api/auteurs`, methods=DELETE
+#### Route `/api/auteurs` (méthode DELETE)
 
 ```php 
 public function deleteAuteur(Auteur $auteur, AuteurRepository $repository) : Response{
@@ -314,45 +284,34 @@ public function deleteAuteur(Auteur $auteur, AuteurRepository $repository) : Res
     }
 ```
 
-## BILAN 
+### Bilan
 
-- Comprendre et maitrise le routage SF
-- -techniquement c'est lannotation qui fait le routage
-  - Mettre en oeuvre le routage ppur l'entité `Auteur`
-    - GET
-    - POST
-    - DELETE
-
-
----
-
-**Developper une API à base du routage de Symfony**
-
----
-
-**Application à l'entité `Livre`**
-**Branch Gitlab - Etape03-2**
-
----
-
-## Objectf
--Comprendre et maîtriser le routage Sf
--Mettre en oeuvre le routage pour l'entité `Livre`
--GET (*), GET (1) (select)
--POST (insert)
--DELETE (delete)
+- Compréhension et maîtrise du routage Symfony : techniquement, c'est l'annotation qui définit le routage.
+- Mise en œuvre du routage pour l'entité `Auteur` :
+  - GET
+  - POST
+  - DELETE
 
 
-## Controleur `LivreController`
+## Étape 3.2 — Routage de l'entité Livre
+
+### Objectifs
+- Comprendre et maîtriser le routage Symfony
+- Mettre en œuvre le routage pour l'entité `Livre`
+- GET (*), GET (1) (sélection)
+- POST (insertion)
+- DELETE (suppression)
+
+### Contrôleur `LivreController`
 
 ```
 php bin/console make:controller LivreController --no-template
 ```
 
-## Jeu de test pour les livres
-- Ajouter les livres
+### Jeu de test pour les livres
+- Ajout des livres
 
-- Route `/api/livres methode=GET`
+- Route `/api/livres`, méthode GET
 ```php
 
 public function getLivres(LivreRepository $livreRepository ) : Response
@@ -364,7 +323,7 @@ public function getLivres(LivreRepository $livreRepository ) : Response
 }
 
 ```
-- serializer groups
+- Groupes de sérialisation
 
 ```
     /**
@@ -380,37 +339,34 @@ public function getLivres(LivreRepository $livreRepository ) : Response
 
 ```
 
-- On test les routes : 
+- Test des routes :
 ```
 http://localhost:8000/api/livres
 http://localhost:8000/api/auteurs
 ```
 
-- Une erreur se produit
+- Une erreur se produit :
 ```ERROR
 - 502 bad Gateway // C'est une erreur serveur WEB
 ```
 
-
-## La route `api/auteurs`, methode=GET, ajout de l'annotation @Groups pour les auteurs
+### La route `/api/auteurs`, méthode GET — ajout de l'annotation @Groups pour les auteurs
 
 - @Groups({"liste_livres","liste_auteurs"}) dans les attributs
-- Serializez dans le controleur auteurs
-- La route api/auteurs/1 ne fonctionne pas 
+- Sérialisation dans le contrôleur des auteurs
+- La route `/api/auteurs/1` ne fonctionne pas
 
+### La route `/api/auteurs/{id}`, méthode GET — ajout de l'annotation @Groups pour les auteurs
 
-## La route `/api/auteurs/{id}`, methode=GET, ajout de l'annotation @Groups pour les auteurs
+- Sérialisation dans le contrôleur des auteurs : `['groups' => ['liste_auteurs']]`
 
-- Serialize dans le contrleur auteurs ['groups' => ['liste_auteurs']]
+### La route `/api/livres/{id}`, méthode POST — ajout de l'annotation @Groups pour les auteurs
 
+- La route `/api/livres/{id}` a été reprise de celle des auteurs, en adaptant les références (GET, POST, DELETE) à l'entité livres
 
-## La route `/api/livres/{id}`, methode=POST, ajout de l'annotation @Groups pour les auteurs
+- Les données transmises permettent de construire un auteur, mais celui-ci n'est pas destiné à être persisté en base de données : la sérialisation automatique ne fonctionne donc pas dans ce cas
 
-- On copie la route /api/livres/{id} de auteur et remplace par livres (get, post, delete)
-
-- On passe de quoi construire un auteur mais pas qu'on voudrait le persister dans la BD donc ca ne marche pas
-
-- Il faut donc passer par une séréalisation manuelle pour faire persister la data
+- Il est par conséquent nécessaire de passer par une sérialisation manuelle afin de permettre la persistance des données
 
 ```php
 public function postLivre(Request $request, LivreRepository $livreRepository, AuteurRepository $auteurRepository){
@@ -428,40 +384,33 @@ public function postLivre(Request $request, LivreRepository $livreRepository, Au
 }
 ```
 
-- Dans la route localhost:8080/api/auteurs/2, il possede 2 livres
+- Sur la route `localhost:8080/api/auteurs/2`, l'auteur possède 2 livres
 
-## La route `/api/livres`, methode = DELETE
+### La route `/api/livres`, méthode DELETE
 
-## BILAN 
+### BILAN
 
-- Les controlleur sont similaires, ressemblance entres les POST reponse HTTP
-- Les references entre attributs sont complexes, il faut faire attention a ne pas se tromper, utiliser les groups pour eviter les references circulaires,
-- Serializer à la main pour bien faire persister dans la base de donnée 
+- Les contrôleurs présentent des similitudes, notamment une ressemblance entre les réponses HTTP des méthodes POST
+- Les références entre attributs sont complexes ; il convient d'y prêter attention et d'utiliser les groupes de sérialisation pour éviter les références circulaires
+- Une sérialisation manuelle est nécessaire pour garantir la persistance correcte des données en base
 
-## Conclusion 
+### Conclusion
 
-- reutiliser le code souces des routes
-- On peut avoir une bibliothèque permettant de crér le routes de l'API
-- API plateform, automatiser la création du routage donc API, création d'entités et généralement le OpenAPis (openapis.org)
+- Réutiliser le code source des routes
+- Il est possible de s'appuyer sur une bibliothèque permettant de créer les routes de l'API
+- API Platform permet d'automatiser la création du routage de l'API ainsi que la création des entités, généralement en s'appuyant sur la spécification OpenAPI (openapis.org)
 
 
-**R4.01 Architecture Logicielle - Developpement d'API**
+## Étape 4 — Découverte d'API Platform
 
----
+### Pré-requis
 
-**API Plateform**
-**Installation**
-**Application API**
+1. Stack Docker démarrée
+2. Conteneur `sfapi` démarré
+3. Être positionné dans le terminal du conteneur (bash)
 
----
+### Installation
 
-## Pré-requis
-
-1. Stack docker demarrée
-2. conteneur sfapi démaré
-3. être dans le bash
-
-## Installlation 
 ```sh
 composer require api
 ```
@@ -471,19 +420,18 @@ api-platforme/core
 Aliases api api-plateform
 ```
 
-Probleme : 
-  l'install exige le symofny serializer donc on fait :
+Problème : l'installation nécessite le composant Symfony Serializer, on exécute donc :
 
 ```
 composer require serializer
 ```
 
-** commande : **
+**Commande :**
 ```
 composer recipes api-platform/core
 ```
 
-** Résultat **
+**Résultat :**
 ```
 name             : api-platform/core
 version          : 2.5
@@ -502,50 +450,51 @@ files            :
 
 ```
 
-On essaye 
+On teste l'accès à l'API :
 
 ```
 http://localhost:8000/api
 ```
 
+### Transformation de l'entité Auteur
 
-## Transformation de l'entité Àuteur`
+- On supprime l'attribut `livres` ainsi que son getteur et son setteur de l'entité `Auteur`.
+- On supprime l'annotation `@Groups`.
 
-- On supprime l'attribut `livres` et ses getteur et setteur de l'entité `Auteurs`
-- On suppprime l'annotation `@Groups`
-
-Dans l'entete de l'entité Auteurs rajouter `@ApiResource()` et inclure
+Dans l'en-tête de l'entité `Auteur`, on ajoute l'annotation `@ApiResource()` et on inclut :
 
 ```php
 use ApiPlatform\Core\Annotation\ApiResource;
 ```
 
-## Si rien ne change il faut faire :
+### En cas de non prise en compte des modifications
+
+Exécuter :
 
 ```
 php bin/console cache:clear
 php bin/console assets:install public
 ```
 
-## Swagger : documentation d'une api 
+### Documentation de l'API avec Swagger
 
-Doit être conforme avec OpenAPI
+Elle doit être conforme à la spécification OpenAPI.
 
-Si on veut choisir un auteur en particulier :
+Pour consulter un auteur en particulier :
 
 ```
 http://localhost:8000/api/auteurs/34.jsonld
 ```
 
-Affiche une arborescence
+Affiche l'arborescence des routes disponibles :
 
 ```
 php bin/console debug:router
 ```
 
-## Utilisation du profiler dans une API
+### Utilisation du Profiler dans une API
 
-## Installation
+Installation :
 
 ```sh
 
@@ -553,9 +502,9 @@ composer require profiler --dev
 composer require debug --dev
 ```
 
-## Enlever la fonction delete dans l'API
+### Retirer l'opération de suppression (delete) de l'API
 
-- Route `App/Entity/Auteur`
+- Fichier concerné : `App/Entity/Auteur`
 ```php
 /**
  * @ApiResource(
@@ -569,30 +518,28 @@ composer require debug --dev
 
 ```
 
-## Application : getter et setter asspcoés à un attrivut
+### Getter et setter associés à un attribut
 
-Ajoute d'un nouvel attribut de l'entité Auteur
+Ajout d'un nouvel attribut à l'entité `Auteur`.
 
-Dans l'entité Auteur, on ajoute un attribut :
-- nom attribut : createAdt
-- type : datetime_immutable
-- il peut être null
-- on peut envoer la migration si on souhaite voir les données
+Dans l'entité `Auteur`, on ajoute un attribut :
+- nom de l'attribut : `createAdt`
+- type : `datetime_immutable`
+- il peut être `null`
+- on peut exécuter la migration si l'on souhaite visualiser les données
 
 ```php
  php bin/console make:migration
  php bin/console doctrine:migrations:migrate
 ```
 
-## La date de création d'un auteur ne doit pas être modifiable 
+### La date de création d'un auteur ne doit pas être modifiable
 
-- Avoir un champ createAdt sur la sortie n'est pas interessant, le client ne doit pas pouvoir modifier
+- Le champ `createAdt` doit apparaître en sortie, mais le client ne doit pas pouvoir le modifier.
+- Il faut donc interdire l'écriture sur le champ `createAdt`.
+- Localiser la méthode `setCreateAdt()` et la supprimer.
 
-- Donc, on doit interdite l'entrée dans le champ createAdt
-
-- Trouver la methode setCreateAdt() et supprimez la
-
-on ajoute 
+On ajoute le constructeur suivant :
 
 ```php
 public function __construct(){
@@ -601,19 +548,16 @@ $this->createAdt = new \DateTimeImmutable();
 }
 ```
 
-## Personnaliser le champ createdAdt
+### Personnaliser le champ createAdt
 
-- Disons qu'en plus du champ createAdt
-- Qui est dans un format un peu laid mais standard
-- Nous voulons également renvoyer la date sous dorme de chaîne
-- quelque chose come il y a 5 minutes
-- On installe : 
+- En plus du champ `createAdt`, qui est dans un format standard mais peu lisible, nous souhaitons également renvoyer la date sous forme de chaîne de caractères, par exemple sous la forme « il y a 5 minutes ».
+- On installe la bibliothèque suivante :
 
 ```php 
 composer require nesbot/carbon
 ```
 
-- Juste en dessous de la fontion getCreateAdt() on ajoute la fonction suivante :
+- Juste en dessous de la méthode `getCreateAdt()`, on ajoute la méthode suivante :
 
 ```php 
 public function getCreatedAdtAgo() : string{
@@ -622,11 +566,11 @@ return Carbon::instance($this->getCreatedAdt())->diffForHumans();
 
 ```
 
-APIPlateform n'a pas besoin d'attribut, il prend juste un getter et/ou un setter pour l'afficher 
+API Platform n'a pas besoin d'un attribut propre : il lui suffit d'un getter et/ou d'un setter pour l'exposer.
 
-## Ajouter un groupe de sérialisation de normalisaiton
+### Ajouter un groupe de sérialisation de normalisation
 
-Rappel : normalisation = object TO array
+Rappel : la normalisation consiste à transformer un objet en tableau (object → array).
 
 ```php 
 
@@ -641,19 +585,17 @@ Rappel : normalisation = object TO array
  */
 ```
 
-- La propriété groups dans normalizationContext définit le nom du groupe à l'opération lecture des attributs de notre object pour les fournir à un array
-
-- Nous avons ajouté un tag : `read` au nom de ce groupe pour rappeler que ce groupe ezst associer a l'oépration de lecture
-
-- On ajoute groups aux attributs auteur pour lire
+- La propriété `groups` de `normalizationContext` définit le nom du groupe utilisé lors de la lecture des attributs de l'objet, afin de les restituer sous forme de tableau.
+- Nous avons ajouté le suffixe `read` au nom de ce groupe pour rappeler qu'il est associé à l'opération de lecture.
+- On ajoute l'annotation `@Groups` aux attributs de l'entité `Auteur` à exposer en lecture :
 
 ```php
  @Groups({"auteurs:read"})
  ```
 
-## Ajouter un groupe de sérialisation de denormalisaiton
+### Ajouter un groupe de sérialisation de dénormalisation
 
-Rappel : denormalisation =  array TO object
+Rappel : la dénormalisation consiste à transformer un tableau en objet (array → object).
 
 ```php 
 
@@ -669,17 +611,15 @@ Rappel : denormalisation =  array TO object
  */
 ```
 
-
-On ajoute groups aux attrivuts auteur pour ecrire
+On ajoute l'annotation `@Groups` aux attributs de l'entité `Auteur` à autoriser en écriture :
 
 ```php
 @Groups({"auteurs:read","auteurs:write"})
 ```
 
+L'affichage en lecture et en écriture est donc piloté par les groupes de sérialisation.
 
-affichage en lecture / ecriture ---> groups
-
-- On remarque que la propriété createdAdtAgo a disparu, pour l'ajouter on lui donne l'annotation de Groups
+- On remarque que la propriété `createdAdtAgo` a disparu de la sortie ; pour la réintégrer, on lui ajoute l'annotation `@Groups` :
 
 ```php 
     /**
@@ -693,11 +633,9 @@ affichage en lecture / ecriture ---> groups
     }
 ```
 
-## 1. Modification de l'entité Auteur
+### Ajout de l'attribut biographie à l'entité Auteur
 
-# 1.1 Ajout de l'attribut biographie
-
-Mise à jour de l'entité
+Mise à jour de l'entité :
 
 ```php 
 php bin/console make:entity Auteur
@@ -710,8 +648,7 @@ php bin/console make:migration
 php bon/console doctrine:migrations:migrate
 ```
 
-Supposons maintenant, qu'un souhaite ajouter un setteur additionnel pour cet attribut qui transforme le texte brute, avec des retours de ligne '\n' en un text html par exemple. On peut ecrire ce setteur comme suit :
-
+Supposons à présent que l'on souhaite ajouter un setteur additionnel pour cet attribut, qui transforme le texte brut (avec des retours à la ligne `\n`) en texte HTML. On peut écrire ce setteur comme suit :
 
 ```php
     public function setTextBiographie(?string $biographie): self
@@ -722,13 +659,12 @@ Supposons maintenant, qu'un souhaite ajouter un setteur additionnel pour cet att
     }
 ```
 
-## Objectif
+### Objectif
 
-- La lecture de la ressource Auteur doit fournir l'attribut biographie
+- La lecture de la ressource `Auteur` doit exposer l'attribut `biographie`.
+- L'écriture de la ressource `Auteur` doit accepter un attribut nommé `textBiographie`.
 
-- L'écriture de la ressource Auteur doit fournir un attribut qui s'appelle textBiographie
-
-Solution : serialisation 
+Solution : sérialisation.
 
 ```php
 
@@ -755,16 +691,13 @@ class Auteur
 
 ```
 
+### Problème
 
-## Probleme 
+- Si les deux noms pouvaient être identiques, ce serait plus simple pour les utilisateurs de l'API.
 
-- Si ca pouvait etre identiques ca serait simple pour les utilisateurs de l'API
+### Comment maîtriser le nommage des champs
 
-## Comment controller le nomage des champs
-
-Object : appeler notre champ lié à la biographie d'un auteru comme biographique en lecture ET en écriture
-
-@SerializedName
+Objectif : nommer le champ lié à la biographie d'un auteur `biographie`, aussi bien en lecture qu'en écriture, à l'aide de `@SerializedName`.
 
 ```php 
     /**
@@ -780,19 +713,18 @@ Object : appeler notre champ lié à la biographie d'un auteru comme biographiqu
     }
 ```
 
+### Contexte
 
-## Contexte 
+Nous savons que le sérialiseur fonctionne en appelant des méthodes getter et setter, ou en utilisant des propriétés publiques ou d'autres éléments comme des méthodes `has*`/`is*` existantes.
 
-Nous savons que le sérialiseur aime travailler e appelant des méthodes getter et setter, ou en utilisant des propriétés publiques ou quelques choses autres comme les méthodes hasser ou isser
+Mais que se passe-t-il si l'on souhaite donner un constructeur à la classe `Auteur` ?
 
-Mais que se passe-t-il on souhaite donner un constructeur à la classe Auteur ?
+### Problème et solution
 
-## Probleme et solution
+Étant donné que l'entité `Auteur` nécessite obligatoirement un nom et un prénom, il est pertinent de fournir ces deux attributs au constructeur de cette classe.
+Par conséquent, nous n'avons vraisemblablement plus besoin des setteurs `setNom` et `setPrenom`.
 
-Parce que chaque fois que notre entité Auteur a besoin obligatoirement d'un nom et prénom, je pense que c'est une bonnée idée de forunir ces deux attributs au construteur de cette classe.
-Par conséquent, nous avons très problablement plus besoin des setteurs setNom et setPrenom
-
-D'un point de vue orienté objet, cela rend les propriétés  nom et prenom immuable
+D'un point de vue orienté objet, cela rend les propriétés `nom` et `prenom` immuables.
 
 Solution :
 
@@ -825,22 +757,19 @@ Solution :
     }
 ```
 
+### Quelle conséquence pour le sérialiseur ?
 
-## Quel conséquence pour serializer 
+API Platform se base sur le nom des attributs : pour faire correspondre le nom de l'attribut du constructeur et celui de la base de données, il faut utiliser le même nom.
 
-API Plateform se fit en fonction du noms des attributs, pour lier le nom de l'attribut dans le constructeur et la base de donnée il faut le meme nom.
+Il faut donc veiller à bien respecter la cohérence des noms.
 
-Il faut faire attention a bien respecter les noms.
-
-## Les arguments passés au constructeur peuvent altérer la validaiton des données
+### Les arguments passés au constructeur peuvent altérer la validation des données
 
 Mais il y a un cas limite.
 
-Imaginiez que nous créeons un nouveau auteru et que nous oublions d'envoyer entierement le nom et ou prenom, ca fera de la d
+Imaginons que nous créions un nouvel auteur et que nous oubliions d'envoyer le nom et/ou le prénom : cela provoquera un dysfonctionnement.
 
-Si on veut eviter cela, on doit se fier a la validation, on met les parametre en null.
-
-Pour que l'api puisse tourner.
+Pour éviter cela, on s'appuie sur la validation en rendant les paramètres du constructeur nullables, afin que l'API continue de fonctionner.
 
 ```php
 
@@ -853,23 +782,18 @@ Pour que l'api puisse tourner.
 
 ```
 
-Une erreur 500, c'est une erreur de la base de donnée plus de l'api si on integre un auteur null.
+Une erreur 500 correspond à une erreur de la base de données plutôt qu'à une erreur de l'API, si l'on tente d'enregistrer un auteur vide.
 
+### Contexte
 
+Nous disposons d'une ressource `Auteur` et d'une ressource `Livre`. Établissons une relation entre elles :
 
-## Contexte
+- un auteur peut être associé à plusieurs livres ;
+- un livre est associé à un auteur.
 
-Nous avons une ressource Auteur et une ressource Livre
+### Mise à jour de l'entité Livre : @ApiResource
 
-Relions les ensemble 
-
-un auteur peut etre associé à plusieurs livres
-un livre est associé à un auteur
-
-## Mise a jour de l'entité Livre : @ApiResource
-
-
-On enleve l'attributs Groups de livre et les getter et setter Auteurs
+On retire l'attribut `Groups` de l'entité `Livre` ainsi que le getter et le setter de `Auteur`.
 
 ```php
 /**
@@ -879,50 +803,40 @@ On enleve l'attributs Groups de livre et les getter et setter Auteurs
 
 ```
 
-ajout d'une relation ManyToOne auteur dans attribut Livres
+Ajout d'une relation `ManyToOne` vers `Auteur` dans l'attribut de l'entité `Livre` :
 
 ```php
 bin/console make:migration
 bin/console doctrine:mirations:migrate
 ```
 
-on verifie le getter et ca marche
+On vérifie le getter : cela fonctionne.
 
+## Relations et IRIs
 
----
+### Contexte
 
-**API Plateform**
-**Relation et IRIs**
+Si l'on essaie de créer un `Livre` en définissant la propriété `auteur` avec la valeur `1` (l'identifiant d'un auteur réel en base de données), cela ne fonctionne pas !
 
----
+- Pourquoi ? Parce qu'avec API Platform, et plus généralement dans le développement d'API moderne, on n'utilise pas d'identifiants pour faire référence aux ressources : on utilise des IRIs.
+- Lorsqu'on exécute la route `GET /api/livres` :
 
-## Contexte
+on obtient une URL dans la réponse JSON,
 
-Si on essaie de créer un `Livre` en définissant la propriété `auteur` sur 1 : l'identifiant d'un auteur réel dans la base de données
-alors cela ne fonctionne pas !
+et si l'on essaie la route `GET /api/livres/{1}`, on obtient une erreur Bad Request.
 
+C'est pourquoi Swagger documente l'attribut comme une chaîne de caractères (`string`), ce qui n'est pas totalement exact.
+De prime abord, l'auteur est en effet une chaîne de caractères, et c'est ce que Swagger indique dans le modèle `Livre.livre.Write`.
 
-- Pourquoi ? Parce que API-Plateforme et dans le developpement d'api moderne ne général, nous n'utilisons pas
-d'identifiants pour faire réference à dees ressources. nous utilisons des IRIs
+Mais nous savons que cette valeur est spéciale : elle représente un lien.
 
-- Lorsqu'on execute la route `GET /api/livres`:
+### Conclusion
 
-on obtient une url en reponse JSON 
+Une relation n'est qu'une propriété normale, à ceci près qu'elle est représentée dans l'API par son IRI.
 
-et si on essaie la route `GET /api/livres/{1}` : Bad Request
+### API Platform côté entité Auteur
 
-C'est pourquoi Swagger documente l'attribut comme un "string" ... ce qui n'est pas totalement exact.
-Bien sur, à premiere vue, l'auteur est un string... et c'est ce que Swagger montre dans le modèles Livres.livre.Write
-
-Mais nous savons que c'est valeur est spéciale : elle represente un lien
-
-# Conclusion : 
-
-Une relation n'est qu'un propriété normale, sauf qu'elle est représentée dans l'API avec son IRI
-
-## API- PLATEFORME côté entité `Auteur`
-
-- Actuellement, si on exécute la route `GET /api/auteurs`, l'API renvoie toutes les données d'un auteur sauf a liste des livres associée à l'auteur
+- Actuellement, si l'on exécute la route `GET /api/auteurs`, l'API renvoie toutes les données de l'auteur, à l'exception de la liste des livres qui lui sont associés.
 
 Mise à jour `Auteur` :
 
@@ -936,39 +850,36 @@ Mise à jour `Auteur` :
     }
 ```
 
+### Retourner les données des livres dans l'API Auteurs
 
-## Retourner les données des livres dans l'API Auteurs
+Solution : annoter la classe `Livre` :
 
-Solution
-
-Annoter dans la classe livre :
-
-````php 
+```php 
      * @Groups({"livres:read","livres:write","auteurs:read"})
-````
+```
 
-# Conclusion
+### Conclusion
 
-Le sérialiseur sait sérialiser tous les champs du grupe `auteurs:read`.
-Il regarde d'abord toutes les données de `Auteur` qui font partie de ce groupe. Ensuite, il continue dans les autres ressource associées pour parcourir ce meme groupe et retourner les données annotées
+Le sérialiseur sait sérialiser tous les champs du groupe `auteurs:read`.
+Il examine d'abord toutes les données de `Auteur` qui appartiennent à ce groupe, puis parcourt les ressources associées pour retourner, à leur tour, les données annotées avec ce même groupe.
 
-## Retourner les données des auteurs dans l' API Livres
+### Retourner les données des auteurs dans l'API Livres
 
 ```php 
 @Groups({"auteurs:read","auteurs:write","livres:read"})
 ```
 
-## Embarquer les données de ressources avec restriction sur l'opération
+### Embarquer les données de ressources avec restriction sur l'opération
 
-Nous avons reussi à embarquer les données de nos ressource, et nous avons réuisi à reoutrner les données explicites, sans IRIs, avec l'opération de collection GET
+Nous sommes parvenus à embarquer les données de nos ressources et à retourner des données explicites, sans IRIs, avec l'opération de collection GET.
 
-On veut intégrer les données d'un auteur lorsque je récupère un suel livre, mais la reponse va etre gigantesque.
+Nous souhaitons intégrer les données d'un auteur lorsque l'on récupère un seul livre, mais la réponse risque alors d'être considérablement volumineuse.
 
-# Solution
+### Solution
 
-Dans `Livre`
+Dans `Livre` :
 
-```php 
+```php
 /**
  * @ApiResource(
  *     itemOperations={
@@ -982,15 +893,15 @@ Dans `Livre`
  * )
  * @ORM\Entity(repositoryClass=LivreRepository::class)
  */
- ```
+```
 
-Dans `Auteurs`
+Dans `Auteur` :
 
 ```php 
 * @Groups({"auteurs:read","auteurs:write","livres:item:get"})
 ```
 
-Dans `Auteurs`
+Dans `Auteur` :
 
 ```php 
 
@@ -1012,26 +923,19 @@ Dans `Auteurs`
 
 ```
 
-Dans `Livres`
+Dans `Livre` :
 
-````php 
+```php 
 
 @Groups({"livres:read","livres:write","auteurs:item:get"})
 
-````
+```
 
+## Validation
 
-#
+### Prérequis pour la validation
 
----
-
-**API Plateform**
-**Validation**
-
----
-#
-
-1) Le constructeur de l'entité `Auteurs` n'a pas de paramètres :
+1) Le constructeur de l'entité `Auteur` n'a pas de paramètres :
 
 ```php 
     public function __construct(){
@@ -1041,53 +945,50 @@ Dans `Livres`
     }
 ```
 
-2) On remet les setter sur name et prenom
+2) On remet les setteurs sur `name` et `prenom`.
 
-## Contexte
+### Contexte
 
-Un client API peut envoyer de mauvaise donnnées de différentes manières :
+Un client de l'API peut envoyer des données invalides de différentes manières :
 
-- Il peut envoyer du JSON malformé
-- ou envoyer un champ name, prenom
-- ou etre rincé
+- il peut envoyer du JSON malformé ;
+- ou omettre de renseigner un champ tel que `name` ou `prenom` ;
+- ou envoyer des données vides.
 
-Le travail de notre API est de répondre aux situations informatiques de façon cohérente afin que les erreurs puissent etre facilement comprises
+Le rôle de notre API est de répondre à ces situations de façon cohérente, afin que les erreurs soient facilement compréhensibles.
 
+### Traitement d'un JSON invalide
 
-## Traitemet JSON invalide
+C'est l'un des domaines dans lesquels API Platform excelle particulièrement.
 
-C'est l'un des dommaines dans lesquels API-Plateform excelle vraiment
+Si l'on envoie un JSON invalide, on reçoit une erreur 400 de type `hydra:error`.
 
-Si on envoie un json tout flingué, on recoit une erreur 400 de type hydra:error
+API Platform gère ainsi nativement les problèmes liés à la syntaxe.
 
-En gros API-Plateform gere le cas de problèmes liés à la syntaxe
+### Validation d'attribut
 
-## Validation d'attribut
+Si l'on envoie uniquement `{}`, on obtient une erreur 500 (Internal Server Error) :
 
-si on envoie juste {}, erreur 500 internal erreur
-
-````json 
+```json 
   "hydra:description": "An exception occurred while executing a query: SQLSTATE[23000]: Integrity constraint violation: 1048 Column 'name' cannot be null",
-````
+```
 
-en gros on peut pas, API Plateform envoie un auteur VIDE mais la BD bloque au moment de persist
+En effet, API Platform tente d'enregistrer un auteur vide, mais la base de données rejette l'opération au moment de la persistance.
 
-# Conclusion
+### Conclusion
 
-Symfony ajoute ou erreur 500, ca veut dire que l'on doit controler et décider les règles exactes pour chaque attribut
+Dès lors que Symfony renvoie une erreur 500, cela signifie qu'il nous revient de définir et de contrôler précisément les règles de validation pour chaque attribut.
 
+### Validation des attributs
 
-## Validation des attributs
+Règles métier pour les attributs de l'entité `Auteur` :
 
-Regles métiers pour les attributs de l'entité `Auteurs`
-
-- le nom d'un auteur ne doit pas etre null ou vide
-- le prénom d'un auteur ne doit pas etre null ou vide
-- la biographie d'un auteur ne doit pas etre null ou vide:
-  - texte de longueur min : 10
-  - texte de longueur max : 2000
-  - message en cas d'échec de validation
-
+- le nom d'un auteur ne doit être ni `null` ni vide ;
+- le prénom d'un auteur ne doit être ni `null` ni vide ;
+- la biographie d'un auteur ne doit être ni `null` ni vide :
+  - longueur minimale : 10 caractères ;
+  - longueur maximale : 2000 caractères ;
+  - un message doit être renvoyé en cas d'échec de validation.
 
 ```php 
     /**
@@ -1104,9 +1005,7 @@ Regles métiers pour les attributs de l'entité `Auteurs`
      private $biographie;
 ```
 
-
 Ajoutons un message personnalisé :
-
 
 ```php 
     /**
@@ -1148,55 +1047,37 @@ Ajoutons un message personnalisé :
      */
 ```
 
-## Conclusion
+### Conclusion
 
-La seule chose dont nous devons prendre en charge en tant que developpeur d'API, ce sont les règles métiers.
-Le reste est gérer par API Plateform.
+En tant que développeurs d'API, la seule chose dont nous devons nous charger, ce sont les règles métier.
+Le reste est pris en charge par API Platform.
 
-#
+## Relations imbriquées
 
----
-
-**API Plateform**
-****
-
----
-
-#
-
-Les relation 
-
-## Mettre à jour un attribut d'une relation imbriquée
-
+### Mettre à jour un attribut d'une relation imbriquée
 
 Résultat :
 
-eh bien , la raison pour laquelle le nom d'un auteur est intégré lors de la sérialisation d'un livre est ue, au dessus du nom de l'auteru, nous avons ajouté le groupe 
-`livres:item:get`, qui est l'un des groupes utilisé da l'opération get
+La raison pour laquelle le nom d'un auteur est intégré lors de la sérialisation d'un livre est que nous avons ajouté, au-dessus du nom de l'auteur, le groupe `livres:item:get`, qui est l'un des groupes utilisés par l'opération GET.
 
 ```php 
  @Groups({"auteurs:read","auteurs:write","livres:item:get","livres:write"})
 ```
 
+### Envoyer de nouveaux objets ou des références à des objets existants
 
-## Envoyer des nouveaux objets ou envoyer des références à des objets
-
-Nous avons l'erreur suiviante
+Nous obtenons l'erreur suivante :
 ```
 A new entity was gound trhough the relationship Livre#Auteurs tjat was not configured to cascade persist operations for entity
 ```
 
+Cela signifie que quelque chose a créé un nouvel objet et l'a affecté à la propriété `Livre#Auteur` ; il faut donc mettre à jour une entité existante plutôt que d'en créer une nouvelle.
 
+Si l'on souhaite modifier une entité existante, il faut renseigner son `@id`.
 
-cela signifie que quelque chose a crée un objet nouveau, l'a defini sur la propriété Livres#Auteurs, il faut donc mettre a jour et non créer un objet
+### L'attribut de type collection est modifiable
 
-si on veut modifier, il faut rajouter @id
-
-mapped
-
-## L'attribut de type collection est modifiable 
-
-```php 
+```php
 class Auteur
 
     /**
@@ -1206,11 +1087,11 @@ class Auteur
     private $livres;
 ```
 
-## Créer de nouvels items par l'attribut d'une collection
+### Créer de nouveaux éléments via l'attribut d'une collection
 
-Pour l'instant on peut mettre que des IRI et pas un tableau JSON donc
+Pour l'instant, seuls des IRIs peuvent être fournis pour cet attribut, et non un tableau JSON complet.
 
-## Gérer la persistence 
+### Gérer la persistance
 
 ```php 
     /**
@@ -1220,9 +1101,9 @@ Pour l'instant on peut mettre que des IRI et pas un tableau JSON donc
     private $livres;
 ```
 
-Cependant les contraintes de validation ne sont pas propagé aux enfants, sinon on peut envoyer des livres VIDES
+Cependant, les contraintes de validation ne sont pas propagées aux entités enfants ; sans cela, on pourrait envoyer des livres vides.
 
-On fait :
+On ajoute alors la contrainte suivante :
 
 ```php 
     /**
@@ -1232,4 +1113,3 @@ On fait :
      */
     private $livres;
 ```
-
